@@ -10,7 +10,7 @@ CC = g++
 
 CPP_FILES = src/matrix.cc src/program.cc src/input.cc
 CPP_FILES +=
-HXX_FILES = src/matrix.hh src/program.hh src/object_vbo.hh src/input.hh src/camera.hh
+HXX_FILES = src/matrix.hh src/program.hh src/object_vbo.hh src/input.hh src/camera.hh src/mouse.hh
 HXX_FILES +=
 OBJ_FILES = $(CPP_FILES:.cc=.o)
 

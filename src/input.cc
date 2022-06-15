@@ -1,6 +1,7 @@
 #include "input.hh"
 #include "camera.hh"
 #include "matrix.hh"
+#include <GLFW/glfw3.h>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
@@ -28,6 +29,14 @@ void camera_moves(GLFWwindow *window, Camera *camera, float deltaTime) {
         glm::normalize(glm::cross(camera->cameraFront, camera->cameraUp)) *
         cameraSpeed;
         std::cout << "Press D" << std::endl;
+  }
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    camera->cameraPos += camera->cameraUp * cameraSpeed;
+        std::cout << "Press Space" << std::endl;
+  }
+  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+    camera->cameraPos -= camera->cameraUp * cameraSpeed;
+        std::cout << "Press LShift" << std::endl;
   }
 
   camera->update_view();

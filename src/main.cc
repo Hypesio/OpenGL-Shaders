@@ -10,6 +10,7 @@
 #include "input.hh"
 #include "matrix.hh"
 #include "program.hh"
+#include "mouse.hh"
 
 program *program;
 
@@ -265,13 +266,21 @@ int main(int argc, char *argv[]) {
     std::exit(-1);
   }
 
+
   Camera *camera = new Camera();
+
+  Mouse::init_mouse(camera);
+  glfwSetCursorPosCallback(window, Mouse::mouse_callback);
+  // tell GLFW to capture our mouse
+glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+
   while (!glfwWindowShouldClose(window)) {
     process_input(window, camera);
 
     update_POV(camera->view);
     program->use();
-    
+
     display(window);
     
   }
