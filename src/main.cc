@@ -81,10 +81,14 @@ bool init_GL()
 
 bool init_object()
 {
-    GLuint vbo_id;
+    GLuint vbo_ids[2];
 
     GLint vertex_location =
         glGetAttribLocation(program->get_program_id(), "position");
+    TEST_OPENGL_ERROR();
+
+    GLint normal_flat_location =
+        glGetAttribLocation(program->get_program_id(), "normalFlat");
     TEST_OPENGL_ERROR();
 
     glGenVertexArrays(1, &teapot_vao_id);
@@ -92,12 +96,12 @@ bool init_object()
     glBindVertexArray(teapot_vao_id);
     TEST_OPENGL_ERROR();
 
-    glGenBuffers(1, &vbo_id);
+    glGenBuffers(2, vbo_ids);
     TEST_OPENGL_ERROR();
 
     if (vertex_location != -1)
     {
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[0]);
         TEST_OPENGL_ERROR();
 
         glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(float),
@@ -108,6 +112,24 @@ bool init_object()
         TEST_OPENGL_ERROR();
 
         glEnableVertexAttribArray(vertex_location);
+        TEST_OPENGL_ERROR();
+    }
+
+    if (normal_flat_location != -1)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[1]);
+        TEST_OPENGL_ERROR();
+
+        glBufferData(GL_ARRAY_BUFFER,
+                     normal_flat_buffer_data.size() * sizeof(float),
+                     normal_flat_buffer_data.data(), GL_STATIC_DRAW);
+        TEST_OPENGL_ERROR();
+
+        glVertexAttribPointer(normal_flat_location, 3, GL_FLOAT, GL_FALSE, 0,
+                              0);
+        TEST_OPENGL_ERROR();
+
+        glEnableVertexAttribArray(normal_flat_location);
         TEST_OPENGL_ERROR();
     }
 
@@ -250,7 +272,7 @@ int main(int argc, char *argv[])
     if (!init_textures())
     {
         TEST_OPENGL_ERROR();
-        std::exit(-1);    
+        std::exit(-1);
     }
 
     if (!init_POV())
