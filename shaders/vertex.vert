@@ -17,5 +17,5 @@ void main()
     vec3 normal = normalize(normalFlat);
     vec3 light_direction = normalize(light_pos - position);
 
-    out_color = clamp(dot(normal, light_direction) * light_color, 0, 1);
+    out_color = clamp(dot(normal, light_direction) * light_color, 0, 1) * color;
 }
