@@ -41,11 +41,60 @@ enum {
 
 /*----------------------------------------------------------------------------*/
 
-typedef struct obj obj;
+typedef struct obj
+{
+    unsigned int vao;
+    unsigned int vbo;
+
+    int mc;
+    int mm;
+    int vc;
+    int vm;
+    int sc;
+    int sm;
+
+    int uloc;
+    int nloc;
+    int tloc;
+    int vloc;
+
+    int cloc[OBJ_PROP_COUNT];
+    int oloc[OBJ_PROP_COUNT];
+    int Mloc[OBJ_PROP_COUNT];
+
+    struct obj_mtrl *mv;
+    struct obj_vert *vv;
+    struct obj_surf *sv;
+} obj;
+
+struct obj_vert
+{
+    float u[3];
+    float n[3];
+    float t[2];
+    float v[3];
+};
+
+struct obj_surf
+{
+    int mi;
+
+    int pc;
+    int pm;
+    int lc;
+    int lm;
+
+    unsigned int pibo;
+    unsigned int libo;
+
+    struct obj_poly *pv;
+    struct obj_line *lv;
+};
 
 obj *obj_create(const char *);
 void obj_render(obj *);
 void obj_delete(obj *);
+void obj_init(obj *);
 
 /*----------------------------------------------------------------------------*/
 

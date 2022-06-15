@@ -12,17 +12,24 @@ program *program;
 std::string vertex_shd;
 std::string fragment_shd;
 
-GLuint teapot_vao_id;
-
 void display()
 {
+    obj *objects = program->get_objects();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     TEST_OPENGL_ERROR();
-    glBindVertexArray(teapot_vao_id);
+    glBindVertexArray(objects->vao);
     TEST_OPENGL_ERROR();
 
-    glDrawArrays(GL_TRIANGLES, 0, vertex_buffer_data.size());
-    TEST_OPENGL_ERROR();
+    const struct obj_surf *sp = objects->sv;
+    //glDrawArrays(GL_TRIANGLES, 0, objects->vc * sizeof(struct obj_vert));
+    if (sp->pibo)
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
+        TEST_OPENGL_ERROR();
+        glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT, (const GLvoid *) 0);
+        TEST_OPENGL_ERROR();
+    }
+    
     glBindVertexArray(0);
     TEST_OPENGL_ERROR();
 
@@ -80,58 +87,18 @@ bool init_GL()
 }
 
 bool init_object()
-{
-    GLuint vbo_ids[2];
+{    
+    // Load obj from file
+    obj *dunes = obj_create("data/simple_dunes.obj");
+    if (!dunes)
+        return false;
 
-    GLint vertex_location =
-        glGetAttribLocation(program->get_program_id(), "position");
+    obj_set_vert_loc(dunes, -1, glGetAttribLocation(program->get_program_id(), "normalFlat"), -1, glGetAttribLocation(program->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
 
-    GLint normal_flat_location =
-        glGetAttribLocation(program->get_program_id(), "normalFlat");
-    TEST_OPENGL_ERROR();
+    obj_init(dunes);
 
-    glGenVertexArrays(1, &teapot_vao_id);
-    TEST_OPENGL_ERROR();
-    glBindVertexArray(teapot_vao_id);
-    TEST_OPENGL_ERROR();
-
-    glGenBuffers(2, vbo_ids);
-    TEST_OPENGL_ERROR();
-
-    if (vertex_location != -1)
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[0]);
-        TEST_OPENGL_ERROR();
-
-        glBufferData(GL_ARRAY_BUFFER, vertex_buffer_data.size() * sizeof(float),
-                     vertex_buffer_data.data(), GL_STATIC_DRAW);
-        TEST_OPENGL_ERROR();
-
-        glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        TEST_OPENGL_ERROR();
-
-        glEnableVertexAttribArray(vertex_location);
-        TEST_OPENGL_ERROR();
-    }
-
-    if (normal_flat_location != -1)
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[1]);
-        TEST_OPENGL_ERROR();
-
-        glBufferData(GL_ARRAY_BUFFER,
-                     normal_flat_buffer_data.size() * sizeof(float),
-                     normal_flat_buffer_data.data(), GL_STATIC_DRAW);
-        TEST_OPENGL_ERROR();
-
-        glVertexAttribPointer(normal_flat_location, 3, GL_FLOAT, GL_FALSE, 0,
-                              0);
-        TEST_OPENGL_ERROR();
-
-        glEnableVertexAttribArray(normal_flat_location);
-        TEST_OPENGL_ERROR();
-    }
+    program->set_objects(dunes);
 
     glBindVertexArray(0);
     TEST_OPENGL_ERROR();

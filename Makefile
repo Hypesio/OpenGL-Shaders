@@ -8,10 +8,10 @@
 
 CC = g++
 
-CPP_FILES = src/matrix.cc src/program.cc
-CPP_FILES +=
-HXX_FILES = src/matrix.hh src/program.hh src/object_vbo.hh
-HXX_FILES +=
+CPP_FILES = src/matrix.cc src/program.cc src/lib/obj.cc
+CPP_FILES += 
+HXX_FILES = src/matrix.hh src/program.hh src/object_vbo.hh src/lib/obj.hh
+HXX_FILES += 
 OBJ_FILES = $(CPP_FILES:.cc=.o)
 
 CXX_FLAGS += -Wall -Wextra -O3 -g -std=c++11
