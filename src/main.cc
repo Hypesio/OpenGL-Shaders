@@ -3,14 +3,13 @@
 
 #include <cstddef>
 #include <fstream>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/vec3.hpp>
 #include <iostream>
 
 #include "input.hh"
 #include "matrix.hh"
 #include "mouse.hh"
 #include "program.hh"
+#include "shader_func.hh"
 
 std::vector<program *> programs;
 
@@ -141,37 +140,30 @@ bool init_textures()
     return true;
 }
 
-bool update_POV(glm::mat4 view, GLuint program_id)
-{
-    GLuint model_view_matrix =
-        glGetUniformLocation(program_id, "model_view_matrix");
-    TEST_OPENGL_ERROR();
-    glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, glm::value_ptr(view));
-    TEST_OPENGL_ERROR();
+bool update_POV(glm::mat4 view)
+{        
+    for (size_t i = 0; i < programs.size(); i++)
+    {
+        GLuint model_view_matrix =
+            glGetUniformLocation(programs[i]->get_program_id(), "model_view_matrix");
+        TEST_OPENGL_ERROR();
+        glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, glm::value_ptr(view));
+        TEST_OPENGL_ERROR();
 
-    glm::mat4 mat_2 =
-        glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
-                  0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
-                  0.00000, -10.00100, 0.00000);
+        glm::mat4 mat_2 =
+            glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
+                      0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
+                      0.00000, -10.00100, 0.00000);
 
-    GLuint projection_matrix =
-        glGetUniformLocation(program_id, "projection_matrix");
-    TEST_OPENGL_ERROR();
-    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(mat_2));
-    TEST_OPENGL_ERROR();
+        GLuint projection_matrix =
+            glGetUniformLocation(programs[i]->get_program_id(), "projection_matrix");
+        TEST_OPENGL_ERROR();
+        glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(mat_2));
+        TEST_OPENGL_ERROR();
 
-    glm::vec3 color_vec(0.5, 0.4, 0.7);
-    GLuint color = glGetUniformLocation(program_id, "color");
-    glUniform3fv(color, 1, glm::value_ptr(color_vec));
-
-    glm::vec3 light_color_vec(1, 1, 0.6);
-    GLuint light_color =
-        glGetUniformLocation(program_id, "light_color");
-    glUniform3fv(light_color, 1, glm::value_ptr(light_color_vec));
-
-    glm::vec3 light_pos(3., 3., 0.7);
-    GLuint pos = glGetUniformLocation(program_id, "light_pos");
-    glUniform3fv(pos, 1, glm::value_ptr(light_pos));
+        if (!shader_array[i](programs[i]->get_program_id()))
+          return false;
+    }
 
     return true;
 }
@@ -181,7 +173,7 @@ bool init_POV()
     glm::mat4 view = glm::mat4(
         0.57735, -0.33333, 0.57735, 0.00000, 0.00000, 0.66667, 0.57735, 0.00000,
         -0.57735, -0.33333, 0.57735, 0.00000, 0.00000, 0.00000, -17, 1.00000);
-    return update_POV(view, programs[0]->get_program_id());
+    return update_POV(view);
 }
 
 int main()
@@ -250,12 +242,10 @@ int main()
     {
         process_input(window, camera);
 
+        update_POV(camera->view);
 
         for (const auto &pg : programs)
-        {
-            update_POV(camera->view, pg->get_program_id());
             pg->use();
-        }
 
         display(window);
     }
