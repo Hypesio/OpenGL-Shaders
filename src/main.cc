@@ -122,47 +122,15 @@ bool init_object()
     return true;
 }
 
-std::string load(const std::string &filename)
-{
-    std::ifstream input_src_file(filename, std::ios::in);
-    std::string ligne;
-    std::string file_content = "";
-    if (input_src_file.fail())
-    {
-        std::cerr << "FAIL\n";
-        return "";
-    }
-
-    while (getline(input_src_file, ligne))
-    {
-        file_content = file_content + ligne + "\n";
-    }
-
-    file_content += '\0';
-    input_src_file.close();
-    return file_content;
-}
-
 bool init_shaders()
 {
-    std::string vertex_src = load("shaders/vertex.vert");
-    std::string fragment_src = load("shaders/fragment.frag");
+    std::string vertex_src_path = "shaders/vertex.vert";
+    std::string fragment_src_path = "shaders/fragment.frag";
 
-    char *vertex_shd_src =
-        (char *)std::malloc(vertex_src.length() * sizeof(char));
-    char *fragment_shd_src =
-        (char *)std::malloc(fragment_src.length() * sizeof(char));
-
-    vertex_src.copy(vertex_shd_src, vertex_src.length());
-    fragment_src.copy(fragment_shd_src, fragment_src.length());
-
-    std::string tmp = std::string(vertex_shd_src);
-    std::string tmp_2 = std::string(fragment_shd_src);
-
-    program *first_prog = program::make_program(tmp, tmp_2);
+    program *first_prog = program::make_program(vertex_src_path, fragment_src_path);
     if (!first_prog)
       return false;
-      
+
     programs.push_back(first_prog);
 
     return true;

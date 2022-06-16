@@ -6,6 +6,7 @@
 #include <string>
 
 #include "lib/obj.hh"
+#include "utils.hh"
 
 #define TEST_OPENGL_ERROR()                                                    \
     do                                                                         \
@@ -43,17 +44,17 @@ public:
         objects_ = objects;
     }
 
-    static program *make_program(const std::string &vertex_shader, const std::string &fragment_shader)
+    static program *make_program(const std::string &vertex_shader_path, const std::string &fragment_shader_path)
     {
         program *prog = new program();
 
-        auto vertex_id = prog->load_shader(vertex_shader, GL_VERTEX_SHADER);
+        auto vertex_id = prog->load_shader(load(vertex_shader_path), GL_VERTEX_SHADER);
         if (!vertex_id)
             return nullptr;
 
         prog->set_shader_id(vertex_id, GL_VERTEX_SHADER);
 
-        auto fragment_id = prog->load_shader(fragment_shader, GL_FRAGMENT_SHADER);
+        auto fragment_id = prog->load_shader(load(fragment_shader_path), GL_FRAGMENT_SHADER);
         if (!fragment_id)
         {
             TEST_OPENGL_ERROR();
