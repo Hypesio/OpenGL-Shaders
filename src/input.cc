@@ -39,6 +39,12 @@ void camera_moves(GLFWwindow *window, Camera *camera, float deltaTime) {
         std::cout << "Press LShift" << std::endl;
   }
 
+  if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+    // Reset the camera
+    camera->reset_cam();
+      std::cout << "Press R - Reset the camera view angle" << std::endl;
+  }
+
   camera->update_view();
 }
 

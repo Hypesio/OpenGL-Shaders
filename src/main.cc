@@ -35,13 +35,13 @@ void display(GLFWwindow *window) {
   TEST_OPENGL_ERROR();
 }
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void framebuffer_size_callback(__attribute__((unused))GLFWwindow *window, int width, int height) {
   // make sure the viewport matches the new window dimensions; note that width
   // and height will be significantly larger than specified on retina displays.
   glViewport(0, 0, width, height);
 }
 
-GLFWwindow *init_glfw(int &argc, char *argv[]) {
+GLFWwindow *init_glfw() {
   glfwInit();
   TEST_OPENGL_ERROR();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -224,8 +224,8 @@ bool init_POV() {
   return update_POV(view);
 }
 
-int main(int argc, char *argv[]) {
-  GLFWwindow *window = init_glfw(argc, argv);
+int main() {
+  GLFWwindow *window = init_glfw();
   if (window == nullptr) {
     TEST_OPENGL_ERROR();
     std::exit(-1);

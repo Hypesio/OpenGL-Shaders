@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 #include "camera.hh"
+#include "input.hh"
 
 class Mouse {
 public:
@@ -26,7 +27,7 @@ static inline bool firstMouse;
     camera = cam;
   }
 
-  static void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+  static void mouse_callback(__attribute__((unused))GLFWwindow *window, double xpos, double ypos) {
     // Code from learnopengl.com
     
     if (firstMouse) {
@@ -40,7 +41,7 @@ static inline bool firstMouse;
     lastX = xpos;
     lastY = ypos;
 
-    float sensitivity = 0.1f;
+    float sensitivity = 0.2f * Time::deltaTime();
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 

@@ -26,18 +26,15 @@ public:
   // Reset camera to neutral position
   void reset_cam() {
 
-    vec3 cameraPos = vec3(0.0f, 0.0f, 3.0f);
-    vec3 cameraTarget = vec3(0.0f, 0.0f, 0.0f);
-    vec3 cameraDirection = normalize(cameraPos - cameraTarget);
-    vec3 up = vec3(0.0f, 1.0f, 0.0f);
-    vec3 cameraRight = normalize(cross(up, cameraDirection));
-    vec3 cameraUp = cross(cameraDirection, cameraRight);
+    cameraPos = vec3(0.0f, 0.0f, 3.0f);
+    cameraFront = vec3(0.0f, 0.0f, -1.0f);
+    cameraUp = vec3(0.0f, 1.0f, 0.0f);
 
     mat4 view = mat4();
-    view = lookAt(cameraPos, cameraTarget, cameraUp);
+    view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
   }
 
   void update_view() {
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
   }
 };
