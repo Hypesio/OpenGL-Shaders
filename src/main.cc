@@ -12,14 +12,14 @@
 #include "mouse.hh"
 #include "program.hh"
 
-program *program;
+std::vector<program *> programs;
 
 std::string vertex_shd;
 std::string fragment_shd;
 
 void display(GLFWwindow *window)
 {
-    obj *objects = program->get_objects();
+    obj *objects = programs[0]->get_objects();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     TEST_OPENGL_ERROR();
     glBindVertexArray(objects->vao);
@@ -114,13 +114,13 @@ bool init_object()
         return false;
 
     obj_set_vert_loc(
-        dunes, -1, glGetAttribLocation(program->get_program_id(), "normalFlat"),
-        -1, glGetAttribLocation(program->get_program_id(), "position"));
+        dunes, -1, glGetAttribLocation(programs[0]->get_program_id(), "normalFlat"),
+        -1, glGetAttribLocation(programs[0]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
 
     obj_init(dunes);
 
-    program->set_objects(dunes);
+    programs[0]->set_objects(dunes);
 
     return true;
 }
@@ -173,7 +173,7 @@ bool init_textures()
 bool update_POV(glm::mat4 view)
 {
     GLuint model_view_matrix =
-        glGetUniformLocation(program->get_program_id(), "model_view_matrix");
+        glGetUniformLocation(programs[0]->get_program_id(), "model_view_matrix");
     TEST_OPENGL_ERROR();
     glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, glm::value_ptr(view));
     TEST_OPENGL_ERROR();
@@ -184,22 +184,22 @@ bool update_POV(glm::mat4 view)
                   0.00000, -10.00100, 0.00000);
 
     GLuint projection_matrix =
-        glGetUniformLocation(program->get_program_id(), "projection_matrix");
+        glGetUniformLocation(programs[0]->get_program_id(), "projection_matrix");
     TEST_OPENGL_ERROR();
     glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(mat_2));
     TEST_OPENGL_ERROR();
 
     glm::vec3 color_vec(0.5, 0.4, 0.7);
-    GLuint color = glGetUniformLocation(program->get_program_id(), "color");
+    GLuint color = glGetUniformLocation(programs[0]->get_program_id(), "color");
     glUniform3fv(color, 1, glm::value_ptr(color_vec));
 
     glm::vec3 light_color_vec(1, 1, 0.6);
     GLuint light_color =
-        glGetUniformLocation(program->get_program_id(), "light_color");
+        glGetUniformLocation(programs[0]->get_program_id(), "light_color");
     glUniform3fv(light_color, 1, glm::value_ptr(light_color_vec));
 
     glm::vec3 light_pos(3., 3., 0.7);
-    GLuint pos = glGetUniformLocation(program->get_program_id(), "light_pos");
+    GLuint pos = glGetUniformLocation(programs[0]->get_program_id(), "light_pos");
     glUniform3fv(pos, 1, glm::value_ptr(light_pos));
 
     return true;
@@ -240,10 +240,13 @@ int main()
         std::exit(-1);
     }
 
-    program = program::make_program(vertex_shd, fragment_shd);
-    if (program)
+    program *first_prog = program::make_program(vertex_shd, fragment_shd);
+    if (first_prog)
+      programs.push_back(first_prog);
+      
+    if (programs.size() != 0)
     {
-        program->use();
+        programs[0]->use();
         std::cerr << "Program initialized !" << std::endl;
     }
     else
@@ -277,7 +280,7 @@ int main()
         process_input(window, camera);
 
         update_POV(camera->view);
-        program->use();
+        programs[0]->use();
 
         display(window);
     }
