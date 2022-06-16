@@ -5,12 +5,14 @@
 #include <iostream>
 #include <string>
 
+#include "lib/obj.hh"
+
 #define TEST_OPENGL_ERROR()                                                    \
     do                                                                         \
     {                                                                          \
         GLenum err = glGetError();                                             \
         if (err != GL_NO_ERROR)                                                \
-            std::cerr << "OpenGL ERROR!" << __LINE__ << std::endl;             \
+            std::cerr << "OpenGL ERROR!" << __LINE__ << ", number " << err << std::endl;             \
     } while (0)
 
 class program
@@ -25,9 +27,20 @@ public:
 
     GLuint load_shader(std::string &, GLenum type);
     void link_program();
+
     inline GLuint get_program_id()
     {
         return program_id_;
+    }
+        
+    inline obj *get_objects()
+    {
+        return objects_;
+    }
+
+    inline void set_objects(obj *objects)
+    {
+        objects_ = objects;
     }
 
     static program *make_program(std::string &vertex_shader_src, std::string &fragment_shader)
@@ -58,6 +71,7 @@ private:
     GLuint program_id_;
     GLuint vertex_shd_id_;
     GLuint fragment_shd_id_;
+    obj *objects_;
 
     bool ready_ = false;
 };

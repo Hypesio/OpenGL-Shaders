@@ -8,9 +8,9 @@
 
 CC = g++
 
-CPP_FILES = src/matrix.cc src/program.cc src/input.cc
+CPP_FILES = src/matrix.cc src/program.cc src/input.cc src/lib/obj.cc
 CPP_FILES +=
-HXX_FILES = src/matrix.hh src/program.hh src/object_vbo.hh src/input.hh src/camera.hh src/mouse.hh
+HXX_FILES = src/matrix.hh src/program.hh src/object_vbo.hh src/input.hh src/camera.hh src/mouse.hh src/lib/obj.hh
 HXX_FILES +=
 OBJ_FILES = $(CPP_FILES:.cc=.o)
 
@@ -18,7 +18,8 @@ CXX_FLAGS += -Wall -Wextra -O3 -g -std=c++17
 CXX_FLAGS +=
 CXX_FLAGS += -m64 -march=native
 CXX_FLAGS += -fopt-info-vec-optimized #-fopt-info-vec-missed -ftree-vectorize
-LDXX_FLAGS = -lGLEW -lglfw -lGL -lX11 -lXi -lXrandr -lXxf86vm -lXinerama -lXcursor -lrt -lm
+LDXX_FLAGS = -lGLEW -lglfw -lGL -lX11 -lXrandr -lrt -lm
+# LDXX_FLAGS += -lXi -lXxf86vm -lXinerama -lXcursor 
 
 MAIN_FILE = src/main.cc
 DIST = main

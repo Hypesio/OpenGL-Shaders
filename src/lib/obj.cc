@@ -45,7 +45,7 @@
 */
 /*============================================================================*/
 
-#include "obj.h"
+#include "obj.hh"
 
 struct obj_prop
 {
@@ -65,14 +65,6 @@ struct obj_mtrl
     struct obj_prop kv[OBJ_PROP_COUNT];
 };
 
-struct obj_vert
-{
-    float u[3];
-    float n[3];
-    float t[2];
-    float v[3];
-};
-
 struct obj_poly
 {
     index_t vi[3];
@@ -83,47 +75,6 @@ struct obj_line
     index_t vi[2];
 };
 
-struct obj_surf
-{
-    int mi;
-
-    int pc;
-    int pm;
-    int lc;
-    int lm;
-
-    unsigned int pibo;
-    unsigned int libo;
-
-    struct obj_poly *pv;
-    struct obj_line *lv;
-};
-
-struct obj
-{
-    unsigned int vao;
-    unsigned int vbo;
-
-    int mc;
-    int mm;
-    int vc;
-    int vm;
-    int sc;
-    int sm;
-
-    int uloc;
-    int nloc;
-    int tloc;
-    int vloc;
-
-    int cloc[OBJ_PROP_COUNT];
-    int oloc[OBJ_PROP_COUNT];
-    int Mloc[OBJ_PROP_COUNT];
-
-    struct obj_mtrl *mv;
-    struct obj_vert *vv;
-    struct obj_surf *sv;
-};
 
 static void invalidate(obj *);
 
