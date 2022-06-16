@@ -159,8 +159,8 @@ bool init_shaders()
     vertex_src.copy(vertex_shd_src, vertex_src.length());
     fragment_src.copy(fragment_shd_src, fragment_src.length());
 
-    vertex_shd = vertex_src.c_str();
-    fragment_shd = fragment_src.c_str();
+    vertex_shd = vertex_shd_src;
+    fragment_shd = fragment_shd_src;
 
     return true;
 }
@@ -243,7 +243,7 @@ int main()
     program *first_prog = program::make_program(vertex_shd, fragment_shd);
     if (first_prog)
       programs.push_back(first_prog);
-      
+
     if (programs.size() != 0)
     {
         programs[0]->use();

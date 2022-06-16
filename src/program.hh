@@ -43,15 +43,26 @@ public:
         objects_ = objects;
     }
 
-    static program *make_program(std::string &vertex_shader_src, std::string &fragment_shader)
+    inline void set_vertex_shd(std::string &vertex_shd)
+    {
+        vertex_shd_ = vertex_shd;
+    }
+
+    inline void set_fragment_shd(std::string &fragment_shd)
+    {
+        fragment_shd_ = fragment_shd;
+    }
+
+    static program *make_program(std::string &vertex_shader, std::string &fragment_shader)
     {
         program *prog = new program();
 
-        auto vertex_id = prog->load_shader(vertex_shader_src, GL_VERTEX_SHADER);
+        auto vertex_id = prog->load_shader(vertex_shader, GL_VERTEX_SHADER);
         if (!vertex_id)
             return nullptr;
 
         prog->set_shader_id(vertex_id, GL_VERTEX_SHADER);
+        prog->set_vertex_shd(vertex_shader);
 
         auto fragment_id = prog->load_shader(fragment_shader, GL_FRAGMENT_SHADER);
         if (!fragment_id)
@@ -62,6 +73,8 @@ public:
         }
 
         prog->set_shader_id(fragment_id, GL_FRAGMENT_SHADER);
+        prog->set_fragment_shd(fragment_shader);
+
         prog->link_program();
 
         return prog;
@@ -69,8 +82,13 @@ public:
 
 private:
     GLuint program_id_;
+
     GLuint vertex_shd_id_;
+    std::string vertex_shd_;
+
     GLuint fragment_shd_id_;
+    std::string fragment_shd_;
+
     obj *objects_;
 
     bool ready_ = false;
