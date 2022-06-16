@@ -9,7 +9,7 @@ void program::set_shader_id(GLuint shd_id, GLenum type)
         fragment_shd_id_ = shd_id;
 }
 
-GLuint program::load_shader(std::string &src, GLenum type)
+GLuint program::load_shader(const std::string &src, GLenum type)
 {
     GLint compile_status = GL_TRUE;
 

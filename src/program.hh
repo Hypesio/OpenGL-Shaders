@@ -25,7 +25,7 @@ public:
     void use();
     void set_shader_id(GLuint shd_id, GLenum type);
 
-    GLuint load_shader(std::string &, GLenum type);
+    GLuint load_shader(const std::string &, GLenum type);
     void link_program();
 
     inline GLuint get_program_id()
@@ -43,17 +43,7 @@ public:
         objects_ = objects;
     }
 
-    inline void set_vertex_shd(std::string &vertex_shd)
-    {
-        vertex_shd_ = vertex_shd;
-    }
-
-    inline void set_fragment_shd(std::string &fragment_shd)
-    {
-        fragment_shd_ = fragment_shd;
-    }
-
-    static program *make_program(std::string &vertex_shader, std::string &fragment_shader)
+    static program *make_program(const std::string &vertex_shader, const std::string &fragment_shader)
     {
         program *prog = new program();
 
@@ -62,7 +52,6 @@ public:
             return nullptr;
 
         prog->set_shader_id(vertex_id, GL_VERTEX_SHADER);
-        prog->set_vertex_shd(vertex_shader);
 
         auto fragment_id = prog->load_shader(fragment_shader, GL_FRAGMENT_SHADER);
         if (!fragment_id)
@@ -73,7 +62,6 @@ public:
         }
 
         prog->set_shader_id(fragment_id, GL_FRAGMENT_SHADER);
-        prog->set_fragment_shd(fragment_shader);
 
         prog->link_program();
 
@@ -84,10 +72,7 @@ private:
     GLuint program_id_;
 
     GLuint vertex_shd_id_;
-    std::string vertex_shd_;
-
     GLuint fragment_shd_id_;
-    std::string fragment_shd_;
 
     obj *objects_;
 
