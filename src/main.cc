@@ -94,8 +94,6 @@ bool init_GL()
     glClearColor(0.4, 0.4, 0.4, 1.0);
     TEST_OPENGL_ERROR();
 
-    std::cout << "Clear color init" << std::endl;
-
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
@@ -110,8 +108,9 @@ bool init_object()
         return false;
 
     obj_set_vert_loc(
-        dunes, -1, glGetAttribLocation(programs[0]->get_program_id(), "normalFlat"),
-        -1, glGetAttribLocation(programs[0]->get_program_id(), "position"));
+        dunes, -1,
+        glGetAttribLocation(programs[0]->get_program_id(), "normalFlat"), -1,
+        glGetAttribLocation(programs[0]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
 
     obj_init(dunes);
@@ -123,12 +122,10 @@ bool init_object()
 
 bool init_shaders()
 {
-    std::string vertex_src_path = "shaders/vertex.vert";
-    std::string fragment_src_path = "shaders/fragment.frag";
-
-    program *first_prog = program::make_program(vertex_src_path, fragment_src_path);
+    program *first_prog =
+        program::make_program(shader_paths[0], shader_paths[1]);
     if (!first_prog)
-      return false;
+        return false;
 
     programs.push_back(first_prog);
 
@@ -140,29 +137,37 @@ bool init_textures()
     return true;
 }
 
+bool init_matrix(glm::mat4 view, GLuint program_id)
+{
+    GLuint model_view_matrix =
+        glGetUniformLocation(program_id, "model_view_matrix");
+    TEST_OPENGL_ERROR();
+    glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, glm::value_ptr(view));
+    TEST_OPENGL_ERROR();
+
+    glm::mat4 mat_2 =
+        glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
+                  0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
+                  0.00000, -10.00100, 0.00000);
+
+    GLuint projection_matrix =
+        glGetUniformLocation(program_id, "projection_matrix");
+    TEST_OPENGL_ERROR();
+    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(mat_2));
+    TEST_OPENGL_ERROR();
+    return true;
+}
+
 bool update_POV(glm::mat4 view)
-{        
+{
     for (size_t i = 0; i < programs.size(); i++)
     {
-        GLuint model_view_matrix =
-            glGetUniformLocation(programs[i]->get_program_id(), "model_view_matrix");
-        TEST_OPENGL_ERROR();
-        glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, glm::value_ptr(view));
-        TEST_OPENGL_ERROR();
+        GLuint program_id = programs[i]->get_program_id();
+        if (!init_matrix(view, program_id))
+            return false;
 
-        glm::mat4 mat_2 =
-            glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
-                      0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
-                      0.00000, -10.00100, 0.00000);
-
-        GLuint projection_matrix =
-            glGetUniformLocation(programs[i]->get_program_id(), "projection_matrix");
-        TEST_OPENGL_ERROR();
-        glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(mat_2));
-        TEST_OPENGL_ERROR();
-
-        if (!shader_array[i](programs[i]->get_program_id()))
-          return false;
+        if (!shader_array[i](program_id))
+            return false;
     }
 
     return true;
@@ -203,21 +208,19 @@ int main()
         std::exit(-1);
     }
 
-
-    if (programs.size() != 0)
-    {
-          for (const auto &pg : programs)
-          {
-            pg->use();
-            std::cerr << "Program nb " << pg->get_program_id() << " initialized !" << std::endl;
-          }
-    }
-    else
+    if (programs.size() == 0)
     {
         TEST_OPENGL_ERROR();
-        std::cerr << "Program not initialized !" << std::endl;
+        std::cerr << "Programs not initialized !" << std::endl;
         std::exit(-1);
     }
+
+    for (const auto &pg : programs)
+        {
+            pg->use();
+            std::cerr << "Program nb " << pg->get_program_id()
+                      << " initialized !" << std::endl;
+        }
 
     if (!init_object())
     {
