@@ -15,21 +15,24 @@ std::vector<program *> programs;
 
 void display(GLFWwindow *window)
 {
-    obj *objects = programs[0]->get_objects();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    TEST_OPENGL_ERROR();
-    glBindVertexArray(objects->vao);
-    TEST_OPENGL_ERROR();
-
-    const struct obj_surf *sp = objects->sv;
-    // glDrawArrays(GL_TRIANGLES, 0, objects->vc * sizeof(struct obj_vert));
-    if (sp->pibo)
+    // ? Not sure the loop is necessary 
+    for (const auto &pg : programs)
     {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
+        obj *objects = pg->get_objects();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         TEST_OPENGL_ERROR();
-        glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
-                       (const GLvoid *)0);
+        glBindVertexArray(objects->vao);
         TEST_OPENGL_ERROR();
+
+        const struct obj_surf *sp = objects->sv;
+        if (sp->pibo)
+        {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
+            TEST_OPENGL_ERROR();
+            glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
+                           (const GLvoid *)0);
+            TEST_OPENGL_ERROR();
+        }
     }
 
     glBindVertexArray(0);
@@ -67,6 +70,7 @@ GLFWwindow *init_glfw()
         glfwTerminate();
         return nullptr;
     }
+    
     glfwMakeContextCurrent(window);
     TEST_OPENGL_ERROR();
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -176,8 +180,10 @@ bool update_POV(glm::mat4 view)
 bool init_POV()
 {
     glm::mat4 view = glm::mat4(
-        0.57735, -0.33333, 0.57735, 0.00000, 0.00000, 0.66667, 0.57735, 0.00000,
-        -0.57735, -0.33333, 0.57735, 0.00000, 0.00000, 0.00000, -17, 1.00000);
+        0.57735, -0.33333, 0.57735, 0.00000,
+         0.00000, 0.66667, 0.57735, 0.00000,
+        -0.57735, -0.33333, 0.57735, 0.00000,
+         0.00000, 0.00000, -17, 1.00000);
     return update_POV(view);
 }
 
@@ -216,11 +222,11 @@ int main()
     }
 
     for (const auto &pg : programs)
-        {
-            pg->use();
-            std::cerr << "Program nb " << pg->get_program_id()
-                      << " initialized !" << std::endl;
-        }
+    {
+        pg->use();
+        std::cerr << "Program nb " << pg->get_program_id() << " initialized !"
+                  << std::endl;
+    }
 
     if (!init_object())
     {
