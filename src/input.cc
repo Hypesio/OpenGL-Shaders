@@ -11,7 +11,7 @@
 // Handle camera movement
 void camera_moves(GLFWwindow *window, Camera *camera, float deltaTime)
 {
-    const float cameraSpeed = 2.5f * deltaTime; // adjust accordingly
+    const float cameraSpeed = 10.0f * deltaTime; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
         camera->cameraPos += cameraSpeed * camera->cameraFront;
@@ -47,14 +47,15 @@ void camera_moves(GLFWwindow *window, Camera *camera, float deltaTime)
         std::cout << "Press LShift" << std::endl;
     }
 
+    camera->update_view();
+
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
     {
         // Reset the camera
         camera->reset_cam();
-        std::cout << "Press R - Reset the camera view angle" << std::endl;
+        std::cout << "Press R - Reset the camera position and view angle" << std::endl;
     }
 
-    camera->update_view();
 }
 
 float last_frame = 0;

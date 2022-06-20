@@ -1,47 +1,20 @@
-#include "camera.hh"
-#include "object_vbo.hh"
-
 #include <cstddef>
 #include <fstream>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <iterator>
+#include <ostream>
 
+#include "object_vbo.hh"
+#include "camera.hh"
 #include "input.hh"
 #include "matrix.hh"
 #include "mouse.hh"
 #include "program.hh"
 #include "shader_func.hh"
+#include "textures.hh"
 
 std::vector<program *> programs;
-
-void display(GLFWwindow *window)
-{
-    // ? Not sure the loop is necessary 
-    for (const auto &pg : programs)
-    {
-        obj *objects = pg->get_objects();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        TEST_OPENGL_ERROR();
-        glBindVertexArray(objects->vao);
-        TEST_OPENGL_ERROR();
-
-        const struct obj_surf *sp = objects->sv;
-        if (sp->pibo)
-        {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
-            TEST_OPENGL_ERROR();
-            glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
-                           (const GLvoid *)0);
-            TEST_OPENGL_ERROR();
-        }
-    }
-
-    glBindVertexArray(0);
-    TEST_OPENGL_ERROR();
-
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-    TEST_OPENGL_ERROR();
-}
 
 void framebuffer_size_callback(__attribute__((unused)) GLFWwindow *window,
                                int width, int height)
@@ -70,7 +43,7 @@ GLFWwindow *init_glfw()
         glfwTerminate();
         return nullptr;
     }
-    
+
     glfwMakeContextCurrent(window);
     TEST_OPENGL_ERROR();
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -117,10 +90,18 @@ bool init_object()
         glGetAttribLocation(programs[0]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
 
+
     obj_init(dunes);
 
     programs[0]->set_objects(dunes);
 
+    // Load obj for skybox
+    // obj *skybox = obj_create(nullptr);
+    // skybox->sv->mi = loadSkybox();
+    // skybox->sv->pc = 36;
+    /*obj_set_vert_loc(
+        skybox, -1,
+        -1, -1, glGetAttribLocation(programs[1]->get_program_id(),glGetUniformLocation*/
     return true;
 }
 
@@ -133,58 +114,32 @@ bool init_shaders()
 
     programs.push_back(first_prog);
 
+    program *skybox_prog =
+        program::make_program(shader_paths[2], shader_paths[3]);
+    if (!skybox_prog)
+        return false;
+
+    programs.push_back(skybox_prog);
+
     return true;
 }
 
 bool init_textures()
 {
-    return true;
-}
-
-bool init_matrix(glm::mat4 view, GLuint program_id)
-{
-    GLuint model_view_matrix =
-        glGetUniformLocation(program_id, "model_view_matrix");
-    TEST_OPENGL_ERROR();
-    glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, glm::value_ptr(view));
-    TEST_OPENGL_ERROR();
-
-    glm::mat4 mat_2 =
-        glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
-                  0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
-                  0.00000, -10.00100, 0.00000);
-
-    GLuint projection_matrix =
-        glGetUniformLocation(program_id, "projection_matrix");
-    TEST_OPENGL_ERROR();
-    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(mat_2));
-    TEST_OPENGL_ERROR();
-    return true;
-}
-
-bool update_POV(glm::mat4 view)
-{
-    for (size_t i = 0; i < programs.size(); i++)
-    {
-        GLuint program_id = programs[i]->get_program_id();
-        if (!init_matrix(view, program_id))
-            return false;
-
-        if (!shader_array[i](program_id))
-            return false;
-    }
+    // GLuint textureCubemap = loadSkybox();
 
     return true;
 }
 
-bool init_POV()
+bool update_shaders(glm::mat4 view)
 {
-    glm::mat4 view = glm::mat4(
-        0.57735, -0.33333, 0.57735, 0.00000,
-         0.00000, 0.66667, 0.57735, 0.00000,
-        -0.57735, -0.33333, 0.57735, 0.00000,
-         0.00000, 0.00000, -17, 1.00000);
-    return update_POV(view);
+    programs[0]->use();
+    shader_array[0](programs[0], view);
+
+    programs[1]->use();
+    shader_array[1](programs[1], view);
+
+    return true;
 }
 
 int main()
@@ -221,13 +176,6 @@ int main()
         std::exit(-1);
     }
 
-    for (const auto &pg : programs)
-    {
-        pg->use();
-        std::cerr << "Program nb " << pg->get_program_id() << " initialized !"
-                  << std::endl;
-    }
-
     if (!init_object())
     {
         TEST_OPENGL_ERROR();
@@ -240,6 +188,8 @@ int main()
         std::exit(-1);
     }
 
+
+
     Camera *camera = new Camera();
 
     Mouse::init_mouse(camera);
@@ -247,16 +197,22 @@ int main()
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+    bool first = true;
     while (!glfwWindowShouldClose(window))
     {
         process_input(window, camera);
 
-        update_POV(camera->view);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        update_shaders(camera->get_view());
+        
+        glfwSwapBuffers(window);
+        glfwPollEvents();
 
-        for (const auto &pg : programs)
-            pg->use();
-
-        display(window);
+        if (first) {
+            std::cout << "End of display of first frame" << std::endl;
+            first = false;
+        }
     }
 
     return 0;

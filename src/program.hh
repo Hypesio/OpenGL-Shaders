@@ -28,6 +28,7 @@ public:
 
     GLuint load_shader(const std::string &, GLenum type);
     void link_program();
+    GLuint GetUniformLocation(const std::string &name);
 
     inline GLuint get_program_id()
     {
