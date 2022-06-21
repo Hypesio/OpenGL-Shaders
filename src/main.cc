@@ -96,12 +96,23 @@ bool init_object()
     programs[0]->set_objects(dunes);
 
     // Load obj for skybox
-    // obj *skybox = obj_create(nullptr);
-    // skybox->sv->mi = loadSkybox();
-    // skybox->sv->pc = 36;
-    /*obj_set_vert_loc(
-        skybox, -1,
-        -1, -1, glGetAttribLocation(programs[1]->get_program_id(),glGetUniformLocation*/
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    unsigned int cubemapTexture = loadSkybox();
+    TEST_OPENGL_ERROR();
+
+    obj *sky = obj_create(NULL);
+    sky->vao = skyboxVAO; 
+    sky->vbo = skyboxVBO;
+    sky->mc = cubemapTexture;
+    programs[1]->set_objects(sky);
+    
     return true;
 }
 
@@ -133,11 +144,15 @@ bool init_textures()
 
 bool update_shaders(glm::mat4 view)
 {
+    // Dunes
     programs[0]->use();
     shader_array[0](programs[0], view);
 
+    // Skybox
+    glDepthFunc(GL_LEQUAL); TEST_OPENGL_ERROR();
     programs[1]->use();
     shader_array[1](programs[1], view);
+    glDepthFunc(GL_LESS); TEST_OPENGL_ERROR();
 
     return true;
 }
@@ -187,8 +202,6 @@ int main()
         TEST_OPENGL_ERROR();
         std::exit(-1);
     }
-
-
 
     Camera *camera = new Camera();
 

@@ -1,5 +1,5 @@
 #version 450
-layout (location = 0) in vec3 aPos;
+in vec3 position;
 
 out vec3 TexCoords;
 
@@ -8,6 +8,6 @@ uniform mat4 model_view_matrix;
 
 void main()
 {
-    TexCoords = aPos;
-    gl_Position = projection_matrix * model_view_matrix * vec4(aPos, 1.0);
+    TexCoords = position;
+    gl_Position = projection_matrix * model_view_matrix * vec4(position, 1.0);
 } 

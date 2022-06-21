@@ -25,7 +25,7 @@ void init_view_projection(program *program, glm::mat4 view)
 
 bool init_dunes_shader(program *program, glm::mat4 view)
 {
-    std::cout << "Init dune shader" << std::endl;
+    //std::cout << "Init dune shader" << std::endl;
     // Shaders
     init_view_projection(program, view);
 
@@ -43,7 +43,6 @@ bool init_dunes_shader(program *program, glm::mat4 view)
 
     // Objects
     obj *objects = program->get_objects();
-    TEST_OPENGL_ERROR();
     if (objects != nullptr)
     {
         glBindVertexArray(objects->vao);
@@ -58,17 +57,25 @@ bool init_dunes_shader(program *program, glm::mat4 view)
     }
     glBindVertexArray(0);
 
-    std::cout << "End Init dune shader" << std::endl;
+    //std::cout << "End Init dune shader" << std::endl;
 
     return true;
 }
 
 bool init_skybox_shader(program *program, glm::mat4 view)
 {
-    std::cout << "Init Skybox shader" << std::endl;
+    //std::cout << "Init Skybox shader" << std::endl;
+    view = glm::mat4(glm::mat3(view));
     init_view_projection(program, view);
-    glBindVertexArray(0);
+    obj *objects = program->get_objects();
 
-    std::cout << "End init dune shader" << std::endl;
+    glBindVertexArray(objects->vao); TEST_OPENGL_ERROR();
+    glActiveTexture(GL_TEXTURE0); TEST_OPENGL_ERROR();
+    glBindTexture(GL_TEXTURE_CUBE_MAP, objects->mc); TEST_OPENGL_ERROR();
+    glDrawArrays(GL_TRIANGLES, 0, 36); TEST_OPENGL_ERROR();
+    glBindVertexArray(0);
+    TEST_OPENGL_ERROR();
+
+    //std::cout << "End init dune shader" << std::endl;
     return true;
 }

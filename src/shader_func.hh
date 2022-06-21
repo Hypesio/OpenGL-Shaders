@@ -6,14 +6,6 @@
 
 #define NB_SHADERS 2
 
-#define TEST_OPENGL_ERROR()                                                    \
-    do                                                                         \
-    {                                                                          \
-        GLenum err = glGetError();                                             \
-        if (err != GL_NO_ERROR)                                                \
-            std::cerr << "OpenGL ERROR! Shader Func " << __LINE__ << ", number " << err << std::endl;             \
-    } while (0)
-
 typedef bool (*shader_func)(program *, glm::mat4);
 
 bool init_dunes_shader(program *program, glm::mat4 view);
