@@ -8,8 +8,13 @@ uniform vec3 light_pos;
 uniform vec3 light_color;
 uniform mat4 projection_matrix;
 uniform mat4 model_view_matrix;
+uniform vec3 cam_pos;
 
 out vec3 out_color;
+out vec3 frag_pos; 
+out vec3 frag_normal;
+out vec3 frag_light_pos;
+out vec3 frag_cam_pos;
 
 void main()
 {
@@ -18,4 +23,9 @@ void main()
     vec3 light_direction = normalize(light_pos - position);
 
     out_color = clamp(dot(normal, light_direction) * light_color, 0, 1) * color;
+
+    frag_normal = normal;
+    frag_pos = vec3(model_view_matrix * vec4(position, 1.0));
+    frag_light_pos = light_pos;
+    frag_cam_pos = cam_pos;
 }

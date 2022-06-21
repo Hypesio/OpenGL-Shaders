@@ -142,16 +142,16 @@ bool init_textures()
     return true;
 }
 
-bool update_shaders(glm::mat4 view)
+bool update_shaders(Camera *camera)
 {
     // Dunes
     programs[0]->use();
-    shader_array[0](programs[0], view);
+    shader_array[0](programs[0], camera);
 
     // Skybox
     glDepthFunc(GL_LEQUAL); TEST_OPENGL_ERROR();
     programs[1]->use();
-    shader_array[1](programs[1], view);
+    shader_array[1](programs[1], camera);
     glDepthFunc(GL_LESS); TEST_OPENGL_ERROR();
 
     return true;
@@ -217,7 +217,7 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        update_shaders(camera->get_view());
+        update_shaders(camera);
         
         glfwSwapBuffers(window);
         glfwPollEvents();

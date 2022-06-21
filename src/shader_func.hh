@@ -3,13 +3,14 @@
 #include <GL/glew.h>
 #include "program.hh"
 #include "matrix.hh"
+#include "camera.hh"
 
 #define NB_SHADERS 2
 
-typedef bool (*shader_func)(program *, glm::mat4);
+typedef bool (*shader_func)(program *, Camera*);
 
-bool init_dunes_shader(program *program, glm::mat4 view);
-bool init_skybox_shader(program *program, glm::mat4 view);
+bool init_dunes_shader(program *program, Camera* camera);
+bool init_skybox_shader(program *program, Camera* camera);
 
 static std::string shader_paths[] = {
     "shaders/vertex.vert",

@@ -1,10 +1,14 @@
 #include "shader_func.hh"
 
 #include <GL/gl.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <iterator>
 
+#include "camera.hh"
 #include "program.hh"
+
+glm::vec3 light_pos(3., 1000., 0.7);
 
 void init_view_projection(program *program, glm::mat4 view)
 {
@@ -23,13 +27,13 @@ void init_view_projection(program *program, glm::mat4 view)
     TEST_OPENGL_ERROR();
 }
 
-bool init_dunes_shader(program *program, glm::mat4 view)
+bool init_dunes_shader(program *program, Camera* camera)
 {
     //std::cout << "Init dune shader" << std::endl;
     // Shaders
-    init_view_projection(program, view);
+    init_view_projection(program, camera->get_view());
 
-    glm::vec3 color_vec(0.5, 0.4, 0.7);
+    glm::vec3 color_vec(0.9, 0.44, 0);
     GLuint color = program->GetUniformLocation("color");
     glUniform3fv(color, 1, glm::value_ptr(color_vec));
 
@@ -37,9 +41,11 @@ bool init_dunes_shader(program *program, glm::mat4 view)
     GLuint light_color = program->GetUniformLocation("light_color");
     glUniform3fv(light_color, 1, glm::value_ptr(light_color_vec));
 
-    glm::vec3 light_pos(3., 3., 0.7);
     GLuint pos = program->GetUniformLocation("light_pos");
     glUniform3fv(pos, 1, glm::value_ptr(light_pos));
+
+    GLuint pos_cam = program->GetUniformLocation("cam_pos");
+    glUniform3fv(pos_cam, 1, glm::value_ptr(camera->cameraPos));
 
     // Objects
     obj *objects = program->get_objects();
@@ -62,10 +68,10 @@ bool init_dunes_shader(program *program, glm::mat4 view)
     return true;
 }
 
-bool init_skybox_shader(program *program, glm::mat4 view)
+bool init_skybox_shader(program *program, Camera* camera)
 {
     //std::cout << "Init Skybox shader" << std::endl;
-    view = glm::mat4(glm::mat3(view));
+    glm::mat4 view = glm::mat4(glm::mat3(camera->get_view()));
     init_view_projection(program, view);
     obj *objects = program->get_objects();
 
