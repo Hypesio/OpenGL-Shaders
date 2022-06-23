@@ -66,6 +66,8 @@ main-build: pre-build build
 build: $(OBJ_FILES)
 	$(CC) $(MAIN_FILE) -o $(DIST) $(OBJ_FILES) $(CXX_FLAGS) $(LDXX_FLAGS)
 
+run: pre-build build
+	./${DIST}
 
 %.o: %.cc %.hh
 	@$(call color,2)
@@ -84,7 +86,7 @@ build: $(OBJ_FILES)
 	fi ;\
 	exit $$sta
 
-.PHONY: all clean pre-build post-build main-build build
+.PHONY: all clean pre-build post-build main-build build run
 
 clean:
 	rm -f $(OBJ_FILES)

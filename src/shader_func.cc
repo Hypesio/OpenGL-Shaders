@@ -59,13 +59,9 @@ bool init_dunes_shader(program *program, Camera *camera)
     //  Shaders
     init_view_projection(program, camera->get_view());
 
-    glm::vec3 color_vec(0.9, 0.44, 0);
+    glm::vec3 color_vec(0.97, 0.89, 0.71);
     GLuint color = program->GetUniformLocation("color");
     glUniform3fv(color, 1, glm::value_ptr(color_vec));
-
-    glm::vec3 light_color_vec(1, 1, 0.6);
-    GLuint light_color = program->GetUniformLocation("light_color");
-    glUniform3fv(light_color, 1, glm::value_ptr(light_color_vec));
 
     GLuint pos = program->GetUniformLocation("light_pos");
     glUniform3fv(pos, 1, glm::value_ptr(light_pos));

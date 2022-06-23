@@ -1,8 +1,11 @@
 #include "textures.hh"
 
 #include <endian.h>
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include <iostream>
 
+#include "program.hh"
 #include "lib/obj.hh"
 #include "lib/stb_image.h"
 #include "program.hh"
@@ -128,4 +131,46 @@ int generate_render_texture(GLuint &frame_buffer_number, int width, int height, 
     glBindFramebuffer(GL_FRAMEBUFFER, 0); TEST_OPENGL_ERROR();
 
     return 0;
+}
+
+unsigned int loadSandTexture(program *prog)
+{
+    GLuint normalmap_id;
+    glGenTextures(1, &normalmap_id);
+    TEST_OPENGL_ERROR();
+
+    glActiveTexture(GL_TEXTURE2);
+    TEST_OPENGL_ERROR();
+
+    glBindTexture(GL_TEXTURE_2D, normalmap_id);
+    TEST_OPENGL_ERROR();
+
+    int width, height, nrChannels;
+    std::string fullPath = textures_path;
+    fullPath = fullPath.append("normalTexture_equlize.png");
+    void *data = stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
+    if (!data)
+        return -1;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, data);
+    TEST_OPENGL_ERROR();
+
+    auto normalmap_location = prog->GetUniformLocation( "normalmap_sampler");
+    TEST_OPENGL_ERROR();
+    std::cout << "normalmap_location " << normalmap_location << std::endl;
+
+    glUniform1i(normalmap_location, 2);
+    TEST_OPENGL_ERROR();
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    TEST_OPENGL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    TEST_OPENGL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    TEST_OPENGL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    TEST_OPENGL_ERROR();
+
+    return normalmap_id;
 }

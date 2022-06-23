@@ -97,8 +97,10 @@ bool init_object()
     TEST_OPENGL_ERROR();
 
     obj_init(dunes);
-
     programs[0]->set_objects(dunes);
+
+
+    
 
     // Load obj for skybox
     unsigned int cubemapTexture = loadSkybox();
@@ -114,6 +116,7 @@ bool init_object()
     programs[1]->set_objects(skybox);
     skybox->mc = cubemapTexture;
     skybox->values[0] = loadTexture("cloud_tiny.png", true);
+
 
     // Load obj for water
     obj *planeWater = obj_create("data/plane.obj");
