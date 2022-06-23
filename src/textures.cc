@@ -1,6 +1,6 @@
 #include "textures.hh"
 
-#include <GL/gl.h>
+#include <GL/glew.h>
 #include <iostream>
 
 #include "lib/obj.hh"
@@ -10,11 +10,8 @@ std::string textures_path = "textures/skybox/";
 
 unsigned int loadSkybox()
 {
-    std::vector<std::string> faces =
-    {
-        "right.jpg",  "left.jpg",  "top.jpg",
-        "bottom.jpg", "front.jpg", "back.jpg"
-    };
+    std::vector<std::string> faces = { "right.jpg",  "left.jpg",  "top.jpg",
+                                       "bottom.jpg", "front.jpg", "back.jpg" };
     return loadCubemap(faces);
 }
 
@@ -51,4 +48,40 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     return textureID;
+}
+
+unsigned int generate_render_texture(GLuint frame_buffer_number, int width, int height)
+{
+    // Create the frame buffer target
+    glGenFramebuffers(1, &frame_buffer_number);
+    glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_number);
+
+    // Create the render texture target
+    GLuint renderedTexture;
+    glGenTextures(1, &renderedTexture);
+    glBindTexture(GL_TEXTURE_2D, renderedTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    // Add a depth buffer
+    GLuint depthrenderbuffer;
+    glGenRenderbuffers(1, &depthrenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                              GL_RENDERBUFFER, depthrenderbuffer);
+
+    // Configure the framebuffer
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture,
+                         0);
+    GLenum draw_buffers[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, draw_buffers);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        return -1;
+
+    return 0;
 }

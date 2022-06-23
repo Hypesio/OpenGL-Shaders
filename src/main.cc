@@ -5,15 +5,18 @@
 #include <iterator>
 #include <ostream>
 
-#include "lib/obj.hh"
 #include "object_vbo.hh"
 #include "camera.hh"
 #include "input.hh"
+#include "lib/obj.hh"
 #include "matrix.hh"
 #include "mouse.hh"
 #include "program.hh"
 #include "shader_func.hh"
 #include "textures.hh"
+
+#define HEIGHT 900
+#define WIDTH 1400
 
 std::vector<program *> programs;
 
@@ -23,6 +26,7 @@ void framebuffer_size_callback(__attribute__((unused)) GLFWwindow *window,
     // make sure the viewport matches the new window dimensions; note that width
     // and height will be significantly larger than specified on retina
     // displays.
+
     glViewport(0, 0, width, height);
 }
 
@@ -37,7 +41,7 @@ GLFWwindow *init_glfw()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     TEST_OPENGL_ERROR();
     GLFWwindow *window =
-        glfwCreateWindow(1400, 900, "Desert Project !", NULL, NULL);
+        glfwCreateWindow(WIDTH, HEIGHT, "Desert Project !", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -66,7 +70,7 @@ bool init_GL()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     TEST_OPENGL_ERROR();
 
-    //glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
     TEST_OPENGL_ERROR();
 
     glClearColor(0.4, 0.4, 0.4, 1.0);
@@ -91,7 +95,6 @@ bool init_object()
         glGetAttribLocation(programs[0]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
 
-
     obj_init(dunes);
 
     programs[0]->set_objects(dunes);
@@ -99,32 +102,26 @@ bool init_object()
     // Load obj for skybox
     unsigned int cubemapTexture = loadSkybox();
 
-    obj* skybox = obj_create("data/cube.obj"); 
+    obj *skybox = obj_create("data/cube.obj");
     obj_set_vert_loc(
         skybox, -1,
-        glGetAttribLocation(programs[0]->get_program_id(), "normalFlat"), -1,
-        glGetAttribLocation(programs[0]->get_program_id(), "position"));
+        glGetAttribLocation(programs[1]->get_program_id(), "normalFlat"), -1,
+        glGetAttribLocation(programs[1]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
     obj_init(skybox);
     programs[1]->set_objects(skybox);
     skybox->mc = cubemapTexture;
 
     // Load obj for water
-    unsigned int waterVAO, waterVBO;
-    glGenVertexArrays(1, &waterVAO);
-    glGenBuffers(1, &waterVBO);
-    glBindVertexArray(waterVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, waterVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    obj *planeWater = obj_create("data/plane.obj");
+    obj_set_vert_loc(
+        planeWater, -1,
+        glGetAttribLocation(programs[2]->get_program_id(), "normalFlat"), -1,
+        glGetAttribLocation(programs[2]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
-
-    obj *planeWater = obj_create(NULL);
-    planeWater->vao = waterVAO; 
-    planeWater->vbo = waterVBO;
+    obj_init(planeWater);
     programs[2]->set_objects(planeWater);
-    
+
     return true;
 }
 
@@ -168,12 +165,16 @@ bool update_shaders(Camera *camera)
     shader_array[0](programs[0], camera);
 
     // Skybox
-    glDepthFunc(GL_LEQUAL); TEST_OPENGL_ERROR();
+    glDepthFunc(GL_LEQUAL);
+    TEST_OPENGL_ERROR();
+
     programs[1]->use();
     shader_array[1](programs[1], camera);
-    glDepthFunc(GL_LESS); TEST_OPENGL_ERROR();
+    glDepthFunc(GL_LESS);
+    TEST_OPENGL_ERROR();
 
     // water
+
     programs[2]->use();
     shader_array[2](programs[2], camera);
 
@@ -227,6 +228,7 @@ int main()
     }
 
     Camera *camera = new Camera();
+    Camera *water_cam = new Camera();
 
     Mouse::init_mouse(camera);
     glfwSetCursorPosCallback(window, Mouse::mouse_callback);
@@ -240,12 +242,19 @@ int main()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
+        framebuffer_size_callback(window, WIDTH, HEIGHT);
         update_shaders(camera);
-        
+
+        glClear(GL_DEPTH_BUFFER_BIT);
+        // Viewport for second camera
+        glViewport(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2);
+        update_shaders(water_cam);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        if (first) {
+        if (first)
+        {
             std::cout << "End of display of first frame" << std::endl;
             first = false;
         }

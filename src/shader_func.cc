@@ -27,10 +27,26 @@ void init_view_projection(program *program, glm::mat4 view)
     TEST_OPENGL_ERROR();
 }
 
-bool init_dunes_shader(program *program, Camera* camera)
+void display_obj(obj *objects)
 {
-    //std::cout << "Init dune shader" << std::endl;
-    // Shaders
+    if (objects != nullptr)
+    {
+        glBindVertexArray(objects->vao);
+        TEST_OPENGL_ERROR();
+
+        const struct obj_surf *sp = objects->sv;
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
+        TEST_OPENGL_ERROR();
+        glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
+                       (const GLvoid *)0);
+        TEST_OPENGL_ERROR();
+    }
+}
+
+bool init_dunes_shader(program *program, Camera *camera)
+{
+    // std::cout << "Init dune shader" << std::endl;
+    //  Shaders
     init_view_projection(program, camera->get_view());
 
     glm::vec3 color_vec(0.9, 0.44, 0);
@@ -49,64 +65,38 @@ bool init_dunes_shader(program *program, Camera* camera)
 
     // Objects
     obj *objects = program->get_objects();
-    if (objects != nullptr)
-    {
-        glBindVertexArray(objects->vao);
-        TEST_OPENGL_ERROR();
-
-        const struct obj_surf *sp = objects->sv;
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
-        TEST_OPENGL_ERROR();
-        glActiveTexture(GL_TEXTURE0); TEST_OPENGL_ERROR();
-        glBindTexture(GL_TEXTURE_CUBE_MAP, objects->mc); TEST_OPENGL_ERROR();
-        glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
-                       (const GLvoid *)0);
-        TEST_OPENGL_ERROR();
-    }
+    display_obj(objects);
     glBindVertexArray(0);
 
-    //std::cout << "End Init dune shader" << std::endl;
+    // std::cout << "End Init dune shader" << std::endl;
 
     return true;
 }
 
-bool init_skybox_shader(program *program, Camera* camera)
+bool init_skybox_shader(program *program, Camera *camera)
 {
-    //std::cout << "Init Skybox shader" << std::endl;
+    // std::cout << "Init Skybox shader" << std::endl;
     glm::mat4 view = glm::mat4(glm::mat3(camera->get_view()));
     init_view_projection(program, view);
     obj *objects = program->get_objects();
-    if (objects != nullptr)
-    {
-        glBindVertexArray(objects->vao);
-        TEST_OPENGL_ERROR();
-
-        const struct obj_surf *sp = objects->sv;
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
-        TEST_OPENGL_ERROR();
-        glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
-                       (const GLvoid *)0);
-        TEST_OPENGL_ERROR();
-    }
-
+    glActiveTexture(GL_TEXTURE0);
+    TEST_OPENGL_ERROR();
+    glBindTexture(GL_TEXTURE_CUBE_MAP, objects->mc);
+    display_obj(objects);
     glBindVertexArray(0);
 
-    //std::cout << "End init dune shader" << std::endl;
+    // std::cout << "End init dune shader" << std::endl;
     return true;
 }
 
-bool init_water_shader(program *program, Camera* camera) {
-    glm::mat4 view = glm::mat4(glm::mat3(camera->get_view()));
+bool init_water_shader(program *program, Camera *camera)
+{
+    glm::mat4 view = camera->get_view();
     init_view_projection(program, view);
 
     obj *objects = program->get_objects();
-
-    glBindVertexArray(objects->vao); TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE0); TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_CUBE_MAP, objects->mc); TEST_OPENGL_ERROR();
-    glDrawArrays(GL_TRIANGLES, 0, 36); TEST_OPENGL_ERROR();
+    display_obj(objects);
     glBindVertexArray(0);
-    TEST_OPENGL_ERROR();
-    
+
     return true;
 }
