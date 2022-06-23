@@ -5,6 +5,7 @@
 #include <iterator>
 #include <ostream>
 
+#include "lib/obj.hh"
 #include "object_vbo.hh"
 #include "camera.hh"
 #include "input.hh"
@@ -36,7 +37,7 @@ GLFWwindow *init_glfw()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     TEST_OPENGL_ERROR();
     GLFWwindow *window =
-        glfwCreateWindow(800, 600, "Desert Project !", NULL, NULL);
+        glfwCreateWindow(1400, 900, "Desert Project !", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -65,7 +66,7 @@ bool init_GL()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     TEST_OPENGL_ERROR();
 
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     TEST_OPENGL_ERROR();
 
     glClearColor(0.4, 0.4, 0.4, 1.0);
@@ -96,22 +97,33 @@ bool init_object()
     programs[0]->set_objects(dunes);
 
     // Load obj for skybox
-    unsigned int skyboxVAO, skyboxVBO;
-    glGenVertexArrays(1, &skyboxVAO);
-    glGenBuffers(1, &skyboxVBO);
-    glBindVertexArray(skyboxVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    unsigned int cubemapTexture = loadSkybox();
+
+    obj* skybox = obj_create("data/cube.obj"); 
+    obj_set_vert_loc(
+        skybox, -1,
+        glGetAttribLocation(programs[0]->get_program_id(), "normalFlat"), -1,
+        glGetAttribLocation(programs[0]->get_program_id(), "position"));
+    TEST_OPENGL_ERROR();
+    obj_init(skybox);
+    programs[1]->set_objects(skybox);
+    skybox->mc = cubemapTexture;
+
+    // Load obj for water
+    unsigned int waterVAO, waterVBO;
+    glGenVertexArrays(1, &waterVAO);
+    glGenBuffers(1, &waterVBO);
+    glBindVertexArray(waterVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, waterVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    unsigned int cubemapTexture = loadSkybox();
     TEST_OPENGL_ERROR();
 
-    obj *sky = obj_create(NULL);
-    sky->vao = skyboxVAO; 
-    sky->vbo = skyboxVBO;
-    sky->mc = cubemapTexture;
-    programs[1]->set_objects(sky);
+    obj *planeWater = obj_create(NULL);
+    planeWater->vao = waterVAO; 
+    planeWater->vbo = waterVBO;
+    programs[2]->set_objects(planeWater);
     
     return true;
 }
@@ -131,6 +143,13 @@ bool init_shaders()
         return false;
 
     programs.push_back(skybox_prog);
+
+    program *water_prog =
+        program::make_program(shader_paths[4], shader_paths[5]);
+    if (!water_prog)
+        return false;
+
+    programs.push_back(water_prog);
 
     return true;
 }
@@ -153,6 +172,10 @@ bool update_shaders(Camera *camera)
     programs[1]->use();
     shader_array[1](programs[1], camera);
     glDepthFunc(GL_LESS); TEST_OPENGL_ERROR();
+
+    // water
+    programs[2]->use();
+    shader_array[2](programs[2], camera);
 
     return true;
 }
