@@ -176,6 +176,8 @@ void  obj_write(const obj *, const char *, const char *, int);
 
 /*======================================================================+=====*/
 
+void *read_tga(const char *filename, int *w, int *h, int *d);
+
 #ifdef __cplusplus
 }
 #endif

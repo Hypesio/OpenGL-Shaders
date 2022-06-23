@@ -1,47 +1,21 @@
-#include "camera.hh"
-#include "object_vbo.hh"
-
 #include <cstddef>
 #include <fstream>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <iterator>
+#include <ostream>
 
+#include "lib/obj.hh"
+#include "object_vbo.hh"
+#include "camera.hh"
 #include "input.hh"
 #include "matrix.hh"
 #include "mouse.hh"
 #include "program.hh"
 #include "shader_func.hh"
+#include "textures.hh"
 
 std::vector<program *> programs;
-
-void display(GLFWwindow *window)
-{
-    // ? Not sure the loop is necessary 
-    for (const auto &pg : programs)
-    {
-        obj *objects = pg->get_objects();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        TEST_OPENGL_ERROR();
-        glBindVertexArray(objects->vao);
-        TEST_OPENGL_ERROR();
-
-        const struct obj_surf *sp = objects->sv;
-        if (sp->pibo)
-        {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
-            TEST_OPENGL_ERROR();
-            glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
-                           (const GLvoid *)0);
-            TEST_OPENGL_ERROR();
-        }
-    }
-
-    glBindVertexArray(0);
-    TEST_OPENGL_ERROR();
-
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-    TEST_OPENGL_ERROR();
-}
 
 void framebuffer_size_callback(__attribute__((unused)) GLFWwindow *window,
                                int width, int height)
@@ -63,14 +37,14 @@ GLFWwindow *init_glfw()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     TEST_OPENGL_ERROR();
     GLFWwindow *window =
-        glfwCreateWindow(800, 600, "Desert Project !", NULL, NULL);
+        glfwCreateWindow(1400, 900, "Desert Project !", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return nullptr;
     }
-    
+
     glfwMakeContextCurrent(window);
     TEST_OPENGL_ERROR();
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -92,7 +66,7 @@ bool init_GL()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     TEST_OPENGL_ERROR();
 
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     TEST_OPENGL_ERROR();
 
     glClearColor(0.4, 0.4, 0.4, 1.0);
@@ -117,10 +91,40 @@ bool init_object()
         glGetAttribLocation(programs[0]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
 
+
     obj_init(dunes);
 
     programs[0]->set_objects(dunes);
 
+    // Load obj for skybox
+    unsigned int cubemapTexture = loadSkybox();
+
+    obj* skybox = obj_create("data/cube.obj"); 
+    obj_set_vert_loc(
+        skybox, -1,
+        glGetAttribLocation(programs[0]->get_program_id(), "normalFlat"), -1,
+        glGetAttribLocation(programs[0]->get_program_id(), "position"));
+    TEST_OPENGL_ERROR();
+    obj_init(skybox);
+    programs[1]->set_objects(skybox);
+    skybox->mc = cubemapTexture;
+
+    // Load obj for water
+    unsigned int waterVAO, waterVBO;
+    glGenVertexArrays(1, &waterVAO);
+    glGenBuffers(1, &waterVBO);
+    glBindVertexArray(waterVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, waterVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    TEST_OPENGL_ERROR();
+
+    obj *planeWater = obj_create(NULL);
+    planeWater->vao = waterVAO; 
+    planeWater->vbo = waterVBO;
+    programs[2]->set_objects(planeWater);
+    
     return true;
 }
 
@@ -133,58 +137,47 @@ bool init_shaders()
 
     programs.push_back(first_prog);
 
+    program *skybox_prog =
+        program::make_program(shader_paths[2], shader_paths[3]);
+    if (!skybox_prog)
+        return false;
+
+    programs.push_back(skybox_prog);
+
+    program *water_prog =
+        program::make_program(shader_paths[4], shader_paths[5]);
+    if (!water_prog)
+        return false;
+
+    programs.push_back(water_prog);
+
     return true;
 }
 
 bool init_textures()
 {
-    return true;
-}
-
-bool init_matrix(glm::mat4 view, GLuint program_id)
-{
-    GLuint model_view_matrix =
-        glGetUniformLocation(program_id, "model_view_matrix");
-    TEST_OPENGL_ERROR();
-    glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, glm::value_ptr(view));
-    TEST_OPENGL_ERROR();
-
-    glm::mat4 mat_2 =
-        glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
-                  0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
-                  0.00000, -10.00100, 0.00000);
-
-    GLuint projection_matrix =
-        glGetUniformLocation(program_id, "projection_matrix");
-    TEST_OPENGL_ERROR();
-    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(mat_2));
-    TEST_OPENGL_ERROR();
-    return true;
-}
-
-bool update_POV(glm::mat4 view)
-{
-    for (size_t i = 0; i < programs.size(); i++)
-    {
-        GLuint program_id = programs[i]->get_program_id();
-        if (!init_matrix(view, program_id))
-            return false;
-
-        if (!shader_array[i](program_id))
-            return false;
-    }
+    // GLuint textureCubemap = loadSkybox();
 
     return true;
 }
 
-bool init_POV()
+bool update_shaders(Camera *camera)
 {
-    glm::mat4 view = glm::mat4(
-        0.57735, -0.33333, 0.57735, 0.00000,
-         0.00000, 0.66667, 0.57735, 0.00000,
-        -0.57735, -0.33333, 0.57735, 0.00000,
-         0.00000, 0.00000, -17, 1.00000);
-    return update_POV(view);
+    // Dunes
+    programs[0]->use();
+    shader_array[0](programs[0], camera);
+
+    // Skybox
+    glDepthFunc(GL_LEQUAL); TEST_OPENGL_ERROR();
+    programs[1]->use();
+    shader_array[1](programs[1], camera);
+    glDepthFunc(GL_LESS); TEST_OPENGL_ERROR();
+
+    // water
+    programs[2]->use();
+    shader_array[2](programs[2], camera);
+
+    return true;
 }
 
 int main()
@@ -221,13 +214,6 @@ int main()
         std::exit(-1);
     }
 
-    for (const auto &pg : programs)
-    {
-        pg->use();
-        std::cerr << "Program nb " << pg->get_program_id() << " initialized !"
-                  << std::endl;
-    }
-
     if (!init_object())
     {
         TEST_OPENGL_ERROR();
@@ -247,16 +233,22 @@ int main()
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+    bool first = true;
     while (!glfwWindowShouldClose(window))
     {
         process_input(window, camera);
 
-        update_POV(camera->view);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        update_shaders(camera);
+        
+        glfwSwapBuffers(window);
+        glfwPollEvents();
 
-        for (const auto &pg : programs)
-            pg->use();
-
-        display(window);
+        if (first) {
+            std::cout << "End of display of first frame" << std::endl;
+            first = false;
+        }
     }
 
     return 0;

@@ -13,7 +13,7 @@
     {                                                                          \
         GLenum err = glGetError();                                             \
         if (err != GL_NO_ERROR)                                                \
-            std::cerr << "OpenGL ERROR!" << __LINE__ << ", number " << err << std::endl;             \
+            std::cerr << "OpenGL ERROR! " << __FILE__ << " " << __LINE__ << ", number " << err << std::endl;             \
     } while (0)
 
 class program
@@ -28,6 +28,7 @@ public:
 
     GLuint load_shader(const std::string &, GLenum type);
     void link_program();
+    GLuint GetUniformLocation(const std::string &name);
 
     inline GLuint get_program_id()
     {

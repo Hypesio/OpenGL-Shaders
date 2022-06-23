@@ -1,4 +1,5 @@
 #include "program.hh"
+#include <string>
 
 void program::set_shader_id(GLuint shd_id, GLenum type)
 {
@@ -127,4 +128,15 @@ void program::use()
 bool program::isready()
 {
     return ready_;
+}
+
+GLuint program::GetUniformLocation(const std::string &name) {
+    GLuint id = glGetUniformLocation(program_id_, name.c_str());
+    TEST_OPENGL_ERROR();
+    if (id == -1)
+    {
+        std::cout << "Uniform asked doesn't exist: " << name
+                  << std::endl;
+    }
+    return id;
 }
