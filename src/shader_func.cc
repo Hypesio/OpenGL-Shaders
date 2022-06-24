@@ -2,6 +2,7 @@
 
 #include <GL/gl.h>
 #include <glm/ext/vector_float3.hpp>
+#include <glm/ext/vector_float4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <iterator>
@@ -11,6 +12,7 @@
 #include "program.hh"
 
 glm::vec3 light_pos(3., 1000., 0.7);
+glm::vec4 clip_plane = vec4(0, 1, 0, 0);
 
 void init_view_projection(program *program, glm::mat4 view)
 {
@@ -45,6 +47,10 @@ void display_obj(obj *objects)
     }
 }
 
+void set_clip_plane(vec4 new_clip_plane) {
+    clip_plane = new_clip_plane;
+}
+
 bool init_dunes_shader(program *program, Camera *camera)
 {
     // std::cout << "Init dune shader" << std::endl;
@@ -64,6 +70,9 @@ bool init_dunes_shader(program *program, Camera *camera)
 
     GLuint pos_cam = program->GetUniformLocation("cam_pos");
     glUniform3fv(pos_cam, 1, glm::value_ptr(camera->cameraPos));
+
+    GLuint id_plane = program->GetUniformLocation("clip_plane");
+    glUniform4f(id_plane, clip_plane.x, clip_plane.y, clip_plane.z, clip_plane.w);
 
     // Objects
     obj *objects = program->get_objects();
@@ -94,9 +103,11 @@ bool init_skybox_shader(program *program, Camera *camera)
 
 bool init_water_shader(program *program, Camera *camera)
 {
-    
     glm::mat4 view = camera->get_view();
     init_view_projection(program, view);
+
+    GLuint id_plane = program->GetUniformLocation("clip_plane");
+    glUniform4f(id_plane, clip_plane.x, clip_plane.y, clip_plane.z, clip_plane.w);
 
     obj *objects = program->get_objects();
     

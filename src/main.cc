@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <fstream>
+#include <glm/ext/vector_float4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <iterator>
@@ -70,7 +71,7 @@ bool init_GL()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     TEST_OPENGL_ERROR();
 
-    // glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     TEST_OPENGL_ERROR();
 
     glClearColor(0.4, 0.4, 0.4, 1.0);
@@ -156,13 +157,15 @@ bool init_shaders()
     return true;
 }
 
-bool update_shaders(Camera *camera, int exclude_shader = -1)
+bool update_shaders(Camera *camera, int exclude_shader = -1, glm::vec4 clip_plane = vec4(0, 1, 0, 0))
 {
+    set_clip_plane(clip_plane);
     // Dunes
     programs[0]->use();
     shader_array[0](programs[0], camera);
 
     // Skybox
+    //glCullFace(GL_FRONT);
     glDepthFunc(GL_LEQUAL);
     TEST_OPENGL_ERROR();
 
@@ -170,6 +173,7 @@ bool update_shaders(Camera *camera, int exclude_shader = -1)
     shader_array[1](programs[1], camera);
     glDepthFunc(GL_LESS);
     TEST_OPENGL_ERROR();
+    //glCullFace(GL_BACK);
 
     // water
     if (exclude_shader != 2)
@@ -234,17 +238,31 @@ int main()
     {
         process_input(window, camera);
 
-        // Viewport for second camera
-        glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->mm); TEST_OPENGL_ERROR();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        update_water_cam(camera, water_cam);
-        update_shaders(water_cam, 2);
+        glEnable(GL_CLIP_PLANE0);
 
         // Be sure the frame buffer target the screen
+        //glDisable(GL_CULL_FACE);
         glBindFramebuffer(GL_FRAMEBUFFER, 0); TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         framebuffer_size_callback(window, WIDTH, HEIGHT);
         update_shaders(camera);
+
+        // Render for the water reflection
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glViewport(0, HEIGHT / 2, WIDTH / 2, HEIGHT / 2);
+        update_shaders(camera, -1, vec4(0, -1, 0, -1));
+
+        // Render for the water reflection
+        //glEnable(GL_CULL_FACE);
+        //glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->mm); TEST_OPENGL_ERROR();
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glViewport(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2);
+        update_water_cam(camera, water_cam);
+        update_shaders(water_cam, -1, vec4(0, 1, 0, -1));
+
+
+
 
 
         glfwSwapBuffers(window);

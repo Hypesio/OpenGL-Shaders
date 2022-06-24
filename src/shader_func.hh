@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <glm/ext/vector_float4.hpp>
 #include "program.hh"
 #include "matrix.hh"
 #include "camera.hh"
@@ -13,6 +14,7 @@ bool init_dunes_shader(program *program, Camera* camera);
 bool init_skybox_shader(program *program, Camera* camera);
 bool init_water_shader(program *program, Camera* camera);
 void update_water_cam(Camera *main_cam, Camera *water_cam);
+void set_clip_plane(vec4 new_clip_plane);
 
 static std::string shader_paths[] = {
     "shaders/vertex.vert",

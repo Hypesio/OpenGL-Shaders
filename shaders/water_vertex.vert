@@ -8,10 +8,12 @@ out vec2 uv_coords;
 
 uniform mat4 projection_matrix;
 uniform mat4 model_view_matrix;
-
+uniform vec4 clip_plane; 
 
 void main()
 {
+
+    gl_ClipDistance[0] = dot(vec4(position, 1.0), clip_plane);
     vec4 water_color = vec4(0.055, 0.97, 0.66, 1.0);
     frag_color = water_color;
     TexCoords = position;
