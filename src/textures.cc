@@ -1,6 +1,5 @@
 #include "textures.hh"
 
-#include <GL/glew.h>
 #include <iostream>
 
 #include "lib/obj.hh"
@@ -50,16 +49,16 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     return textureID;
 }
 
-unsigned int generate_render_texture(GLuint frame_buffer_number, int width, int height)
+unsigned int generate_render_texture(GLuint &frame_buffer_number, int width, int height)
 {
     // Create the frame buffer target
     glGenFramebuffers(1, &frame_buffer_number);
     glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_number);
 
     // Create the render texture target
-    GLuint renderedTexture;
-    glGenTextures(1, &renderedTexture);
-    glBindTexture(GL_TEXTURE_2D, renderedTexture);
+    GLuint rendered_texture;
+    glGenTextures(1, &rendered_texture);
+    glBindTexture(GL_TEXTURE_2D, rendered_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
                  GL_UNSIGNED_BYTE, 0);
 
@@ -75,7 +74,7 @@ unsigned int generate_render_texture(GLuint frame_buffer_number, int width, int 
                               GL_RENDERBUFFER, depthrenderbuffer);
 
     // Configure the framebuffer
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture,
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendered_texture,
                          0);
     GLenum draw_buffers[1] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, draw_buffers);
@@ -83,5 +82,5 @@ unsigned int generate_render_texture(GLuint frame_buffer_number, int width, int 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return -1;
 
-    return 0;
+    return rendered_texture;
 }

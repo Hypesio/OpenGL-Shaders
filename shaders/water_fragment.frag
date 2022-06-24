@@ -7,9 +7,9 @@ in vec2 uv_coords;
 
 layout(location = 0) out vec4 output_color;
 
-uniform sampler2D renderedTexture;
+uniform sampler2D rendered_texture;
 
 void main()
 {    
-    output_color = texture(renderedTexture, uv_coords);
+    output_color = texture(rendered_texture, uv_coords);
 }

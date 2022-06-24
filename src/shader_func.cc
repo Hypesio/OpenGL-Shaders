@@ -1,9 +1,11 @@
 #include "shader_func.hh"
 
 #include <GL/gl.h>
+#include <glm/ext/vector_float3.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <iterator>
+#include <ostream>
 
 #include "camera.hh"
 #include "program.hh"
@@ -78,6 +80,7 @@ bool init_skybox_shader(program *program, Camera *camera)
     // std::cout << "Init Skybox shader" << std::endl;
     glm::mat4 view = glm::mat4(glm::mat3(camera->get_view()));
     init_view_projection(program, view);
+
     obj *objects = program->get_objects();
     glActiveTexture(GL_TEXTURE0);
     TEST_OPENGL_ERROR();
@@ -91,12 +94,34 @@ bool init_skybox_shader(program *program, Camera *camera)
 
 bool init_water_shader(program *program, Camera *camera)
 {
+    
     glm::mat4 view = camera->get_view();
     init_view_projection(program, view);
 
     obj *objects = program->get_objects();
+    
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, objects->mc);
+    
+    GLuint texID = program->GetUniformLocation("rendered_texture");
+    glUniform1i(texID, 0); TEST_OPENGL_ERROR();
+    
     display_obj(objects);
+
     glBindVertexArray(0);
 
+    
+
     return true;
+}
+
+void update_water_cam(Camera *main_cam, Camera *water_cam) {
+    // Set a the good position
+    water_cam->cameraPos = glm::vec3(main_cam->cameraPos.x, -main_cam->cameraPos.y, main_cam->cameraPos.z);
+    
+    // Adapt camera front
+    vec3 front = main_cam->cameraFront;
+    water_cam->cameraFront = glm::vec3(front.x, -front.y, front.z);
+    
+    water_cam->update_view();
 }

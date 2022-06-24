@@ -116,11 +116,16 @@ bool init_object()
     obj *planeWater = obj_create("data/plane.obj");
     obj_set_vert_loc(
         planeWater, -1,
-        glGetAttribLocation(programs[2]->get_program_id(), "normalFlat"), -1,
+        glGetAttribLocation(programs[2]->get_program_id(), "normalFlat"),  glGetAttribLocation(programs[2]->get_program_id(), "uv"),
         glGetAttribLocation(programs[2]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
     obj_init(planeWater);
     programs[2]->set_objects(planeWater);
+    GLuint frame_buffer_number;
+    planeWater->mc = generate_render_texture(frame_buffer_number, 1024, 1024);
+    if (planeWater->mc == -1)
+        std::cout << "Failed to init render texture for water";
+    planeWater->mm = frame_buffer_number;
 
     return true;
 }
@@ -151,14 +156,7 @@ bool init_shaders()
     return true;
 }
 
-bool init_textures()
-{
-    // GLuint textureCubemap = loadSkybox();
-
-    return true;
-}
-
-bool update_shaders(Camera *camera)
+bool update_shaders(Camera *camera, int exclude_shader = -1)
 {
     // Dunes
     programs[0]->use();
@@ -174,9 +172,11 @@ bool update_shaders(Camera *camera)
     TEST_OPENGL_ERROR();
 
     // water
-
-    programs[2]->use();
-    shader_array[2](programs[2], camera);
+    if (exclude_shader != 2)
+    {
+        programs[2]->use();
+        shader_array[2](programs[2], camera);
+    }
 
     return true;
 }
@@ -221,12 +221,6 @@ int main()
         std::exit(-1);
     }
 
-    if (!init_textures())
-    {
-        TEST_OPENGL_ERROR();
-        std::exit(-1);
-    }
-
     Camera *camera = new Camera();
     Camera *water_cam = new Camera();
 
@@ -240,15 +234,18 @@ int main()
     {
         process_input(window, camera);
 
+        // Viewport for second camera
+        glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->mm); TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+        update_water_cam(camera, water_cam);
+        update_shaders(water_cam, 2);
+
+        // Be sure the frame buffer target the screen
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); TEST_OPENGL_ERROR();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         framebuffer_size_callback(window, WIDTH, HEIGHT);
         update_shaders(camera);
 
-        glClear(GL_DEPTH_BUFFER_BIT);
-        // Viewport for second camera
-        glViewport(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2);
-        update_shaders(water_cam);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
