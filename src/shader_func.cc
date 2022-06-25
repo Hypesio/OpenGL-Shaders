@@ -111,17 +111,19 @@ bool init_water_shader(program *program, Camera *camera)
 
     obj *objects = program->get_objects();
     
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, objects->mc);
-    
-    GLuint texID = program->GetUniformLocation("rendered_texture");
+    GLuint texID = program->GetUniformLocation("reflection_texture");
     glUniform1i(texID, 0); TEST_OPENGL_ERROR();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, objects->mc);
+
+    GLuint texID2 = program->GetUniformLocation("refraction_texture");
+    glUniform1i(texID2, 0); TEST_OPENGL_ERROR();
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, objects->sc);
     
     display_obj(objects);
 
     glBindVertexArray(0);
-
-    
 
     return true;
 }
