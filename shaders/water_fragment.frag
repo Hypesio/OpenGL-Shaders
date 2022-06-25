@@ -20,6 +20,8 @@ void main()
     vec4 reflect_color = texture(reflection_texture, reflect_coords);
     vec4 refract_color = texture(refraction_texture, refract_coords);
     
-    output_color = reflect_color;
-    //output_color = mix(reflect_color, refract_color, 0.5);
+    //output_color = refract_color;//mix(frag_color, refract_color, 0.8);
+    vec4 ref_color = mix(reflect_color, refract_color, 0.5);
+    output_color = mix(ref_color, frag_color, 0.02);
+
 }

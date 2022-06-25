@@ -64,6 +64,11 @@ unsigned int generate_render_texture(GLuint &frame_buffer_number, int width, int
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture to avoid errors
+
+    // Configure the framebuffer
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendered_texture,
+                         0);
 
     // Add a depth buffer
     GLuint depthrenderbuffer;
@@ -73,14 +78,10 @@ unsigned int generate_render_texture(GLuint &frame_buffer_number, int width, int
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                               GL_RENDERBUFFER, depthrenderbuffer);
 
-    // Configure the framebuffer
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendered_texture,
-                         0);
-    GLenum draw_buffers[1] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, draw_buffers);
-
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return -1;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return rendered_texture;
 }
