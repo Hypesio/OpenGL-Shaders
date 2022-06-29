@@ -1,6 +1,5 @@
 #version 450
 
-
 in vec4 frag_color;
 in vec4 visual_space; 
 in float reflection_force; 

@@ -16,7 +16,7 @@ unsigned int loadSkybox()
     return loadCubemap(faces);
 }
 
-unsigned int loadTexture(std::string filename) {
+unsigned int loadTexture(std::string filename, bool alpha) {
 
     unsigned int textureID;
     glGenTextures(1, &textureID);
@@ -28,8 +28,9 @@ unsigned int loadTexture(std::string filename) {
     void *data = stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width,
-                         height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        GLuint type_col = alpha ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, type_col, width,
+                         height, 0, type_col, GL_UNSIGNED_BYTE, data);
     }
     else
     {
