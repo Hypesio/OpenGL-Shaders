@@ -15,6 +15,7 @@ class Camera {
 public:
   vec3 cameraPos;
   vec3 cameraFront;
+  vec3 objectForward; 
   vec3 cameraUp;
 
   Camera() {
@@ -24,7 +25,8 @@ public:
   // Reset camera to neutral position
   void reset_cam() {
     cameraPos = vec3(0.0f, 20.0f, -3.0f);
-    cameraFront = vec3(0.0f, 0.0f, -1.0f);
+    cameraFront = vec3(0.0f, 0.0f, 1.0f);
+    objectForward = vec3(0.0f, 0.0f, 1.0f);
     cameraUp = vec3(0.0f, 1.0f, 0.0f);
     view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
   }

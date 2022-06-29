@@ -4,6 +4,7 @@
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtx/dual_quaternion.hpp>
 
 #include "camera.hh"
 #include "input.hh"
@@ -41,7 +42,7 @@ static inline bool firstMouse;
     lastX = xpos;
     lastY = ypos;
 
-    float sensitivity = 0.2f * Time::deltaTime();
+    float sensitivity = 0.8f * Time::deltaTime();
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
@@ -58,5 +59,11 @@ static inline bool firstMouse;
     direction.y = sin(glm::radians(pitch));
     direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     camera->cameraFront = glm::normalize(direction);
+
+    glm::vec3 direction_forward;
+    direction_forward.x = cos(glm::radians(yaw));
+    direction_forward.y = 0;
+    direction_forward.z = sin(glm::radians(yaw));
+    camera->objectForward = glm::normalize(direction_forward);
   }
 };
