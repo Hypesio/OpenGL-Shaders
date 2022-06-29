@@ -117,7 +117,7 @@ bool init_object()
     obj *planeWater = obj_create("data/plane.obj");
     obj_set_vert_loc(
         planeWater, -1,
-        glGetAttribLocation(programs[2]->get_program_id(), "normalFlat"),  glGetAttribLocation(programs[2]->get_program_id(), "uv"),
+        glGetAttribLocation(programs[2]->get_program_id(), "normal_flat"),  glGetAttribLocation(programs[2]->get_program_id(), "uv"),
         glGetAttribLocation(programs[2]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
     obj_init(planeWater);
@@ -143,7 +143,7 @@ bool init_object()
         planeWater->values[3] = rendered_texture;
         planeWater->values[4] = depth_buffer;
     }
-    
+    planeWater->values[6] = loadTexture("water_normal.png");
     
 
     return true;
@@ -255,27 +255,23 @@ int main()
     bool first = true;
     while (!glfwWindowShouldClose(window))
     {
+        Time::update_time_passed();
         process_input(window, camera);
-
+       
         glEnable(GL_CLIP_PLANE0);
 
         // Render for the water refraction
-        //glClear(GL_DEPTH_BUFFER_BIT);
         glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->values[2]); TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //glViewport(0, HEIGHT / 2, WIDTH / 2, HEIGHT / 2);
         update_shaders(camera, 2, vec4(0, -1, 0, -0.000001));
 
         // Render for the water reflection
         glEnable(GL_CULL_FACE);
         glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->values[0]); TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        //glClear(GL_DEPTH_BUFFER_BIT);
-        //glViewport(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2);
         update_water_cam(camera, water_cam);
         update_shaders(water_cam, 2, vec4(0, 1, 0, -0.00001f));
 
-        
         // Be sure the frame buffer target the screen
         glBindFramebuffer(GL_FRAMEBUFFER, 0); TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -52,7 +52,7 @@ typedef struct obj
     int vm;
     int sc;
     int sm;
-    int values[6];
+    int values[12];
 
     int uloc;
     int nloc;

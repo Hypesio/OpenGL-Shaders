@@ -13,8 +13,10 @@ typedef bool (*shader_func)(program *, Camera*);
 bool init_dunes_shader(program *program, Camera* camera);
 bool init_skybox_shader(program *program, Camera* camera);
 bool init_water_shader(program *program, Camera* camera);
+
 void update_water_cam(Camera *main_cam, Camera *water_cam);
 void set_clip_plane(vec4 new_clip_plane);
+void set_time_passed(float value);
 
 static std::string shader_paths[] = {
     "shaders/vertex.vert",
