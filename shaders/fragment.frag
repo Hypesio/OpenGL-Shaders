@@ -25,5 +25,6 @@ void main()
     vec3 specular = spec_strength * spec * light_color;
 
     vec3 final = (diffuse + specular) * out_color;
+
     output_color = vec4(final, 1.0);
 }

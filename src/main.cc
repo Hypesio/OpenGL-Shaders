@@ -122,17 +122,28 @@ bool init_object()
     TEST_OPENGL_ERROR();
     obj_init(planeWater);
     programs[2]->set_objects(planeWater);
-    GLuint frame_buffer_number;
-    planeWater->mc = generate_render_texture(frame_buffer_number, WIDTH, HEIGHT);
-    if (planeWater->mc == -1)
-        std::cout << "Failed to init render texture for water";
-    planeWater->mm = frame_buffer_number;
-    GLuint frame_buffer_number2;
-    planeWater->sc = generate_render_texture(frame_buffer_number2, WIDTH, HEIGHT);
+
+    // Frame buffer reflection
+    GLuint frame_buffer_number, depth_buffer, rendered_texture;
+    int error = generate_render_texture(frame_buffer_number, WIDTH, HEIGHT, rendered_texture, depth_buffer);
+    if (error == -1)
+        std::cout << "Failed to init render reflection texture for water" << std::endl;
+    else {
+        planeWater->values[0] = frame_buffer_number;
+        planeWater->values[1] = rendered_texture;
+    }
     
-    if (planeWater->sc == -1)
-        std::cout << "Failed to init render refraction texture for water";
-    planeWater->sm = frame_buffer_number2;
+    // Frame buffer refraction
+    GLuint frame_buffer_number2;
+    error = generate_render_texture(frame_buffer_number2, WIDTH, HEIGHT, rendered_texture, depth_buffer);
+    if (error == -1)
+        std::cout << "Failed to init render refraction texture for water" << std::endl;
+    else {
+        planeWater->values[2] = frame_buffer_number2;
+        planeWater->values[3] = rendered_texture;
+        planeWater->values[4] = depth_buffer;
+    }
+    
     
 
     return true;
@@ -250,14 +261,14 @@ int main()
 
         // Render for the water refraction
         //glClear(GL_DEPTH_BUFFER_BIT);
-        glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->sm); TEST_OPENGL_ERROR();
+        glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->values[2]); TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //glViewport(0, HEIGHT / 2, WIDTH / 2, HEIGHT / 2);
         update_shaders(camera, 2, vec4(0, -1, 0, -0.000001));
 
         // Render for the water reflection
         glEnable(GL_CULL_FACE);
-        glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->mm); TEST_OPENGL_ERROR();
+        glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->values[0]); TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //glClear(GL_DEPTH_BUFFER_BIT);
         //glViewport(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2);
@@ -270,9 +281,6 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         framebuffer_size_callback(window, WIDTH, HEIGHT);
         update_shaders(camera);
-
-        
-
 
         glfwSwapBuffers(window);
         glfwPollEvents();
