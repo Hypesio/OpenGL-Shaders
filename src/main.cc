@@ -6,12 +6,12 @@
 #include <iterator>
 #include <ostream>
 
-#include "object_vbo.hh"
 #include "camera.hh"
 #include "input.hh"
 #include "lib/obj.hh"
 #include "matrix.hh"
 #include "mouse.hh"
+#include "object_vbo.hh"
 #include "program.hh"
 #include "shader_func.hh"
 #include "textures.hh"
@@ -71,7 +71,7 @@ bool init_GL()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     TEST_OPENGL_ERROR();
 
-    //glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
     TEST_OPENGL_ERROR();
 
     glClearColor(0.4, 0.4, 0.4, 1.0);
@@ -106,7 +106,8 @@ bool init_object()
     obj *skybox = obj_create("data/cube.obj");
     obj_set_vert_loc(
         skybox, -1,
-        glGetAttribLocation(programs[1]->get_program_id(), "normalFlat"), glGetAttribLocation(programs[1]->get_program_id(), "uv"),
+        glGetAttribLocation(programs[1]->get_program_id(), "normalFlat"),
+        glGetAttribLocation(programs[1]->get_program_id(), "uv"),
         glGetAttribLocation(programs[1]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
     obj_init(skybox);
@@ -118,7 +119,8 @@ bool init_object()
     obj *planeWater = obj_create("data/plane.obj");
     obj_set_vert_loc(
         planeWater, -1,
-        glGetAttribLocation(programs[2]->get_program_id(), "normal_flat"),  glGetAttribLocation(programs[2]->get_program_id(), "uv"),
+        glGetAttribLocation(programs[2]->get_program_id(), "normal_flat"),
+        glGetAttribLocation(programs[2]->get_program_id(), "uv"),
         glGetAttribLocation(programs[2]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
     obj_init(planeWater);
@@ -126,26 +128,31 @@ bool init_object()
 
     // Frame buffer reflection
     GLuint frame_buffer_number, depth_buffer, rendered_texture;
-    int error = generate_render_texture(frame_buffer_number, WIDTH, HEIGHT, rendered_texture, depth_buffer);
+    int error = generate_render_texture(frame_buffer_number, WIDTH, HEIGHT,
+                                        rendered_texture, depth_buffer);
     if (error == -1)
-        std::cout << "Failed to init render reflection texture for water" << std::endl;
-    else {
+        std::cout << "Failed to init render reflection texture for water"
+                  << std::endl;
+    else
+    {
         planeWater->values[0] = frame_buffer_number;
         planeWater->values[1] = rendered_texture;
     }
-    
+
     // Frame buffer refraction
     GLuint frame_buffer_number2;
-    error = generate_render_texture(frame_buffer_number2, WIDTH, HEIGHT, rendered_texture, depth_buffer);
+    error = generate_render_texture(frame_buffer_number2, WIDTH, HEIGHT,
+                                    rendered_texture, depth_buffer);
     if (error == -1)
-        std::cout << "Failed to init render refraction texture for water" << std::endl;
-    else {
+        std::cout << "Failed to init render refraction texture for water"
+                  << std::endl;
+    else
+    {
         planeWater->values[2] = frame_buffer_number2;
         planeWater->values[3] = rendered_texture;
         planeWater->values[4] = depth_buffer;
     }
     planeWater->values[6] = loadTexture("water_normal.png");
-    
 
     return true;
 }
@@ -176,7 +183,8 @@ bool init_shaders()
     return true;
 }
 
-bool update_shaders(Camera *camera, int exclude_shader = -1, glm::vec4 clip_plane = vec4(0, 1, 0, 0))
+bool update_shaders(Camera *camera, int exclude_shader = -1,
+                    glm::vec4 clip_plane = vec4(0, 1, 0, 0))
 {
     set_clip_plane(clip_plane);
     // Dunes
@@ -185,18 +193,21 @@ bool update_shaders(Camera *camera, int exclude_shader = -1, glm::vec4 clip_plan
     glDisable(GL_CULL_FACE);
 
     // Skybox
-    //glCullFace(GL_FRONT);
-    glDepthFunc(GL_LEQUAL);
-    TEST_OPENGL_ERROR();
+    // glCullFace(GL_FRONT);
+    if (exclude_shader != 1 && exclude_shader != -2)
+    {
+        glDepthFunc(GL_LEQUAL);
+        TEST_OPENGL_ERROR();
 
-    programs[1]->use();
-    shader_array[1](programs[1], camera);
-    glDepthFunc(GL_LESS);
-    TEST_OPENGL_ERROR();
-    //glCullFace(GL_BACK);
+        programs[1]->use();
+        shader_array[1](programs[1], camera);
+        glDepthFunc(GL_LESS);
+        TEST_OPENGL_ERROR();
+    }
+    // glCullFace(GL_BACK);
 
     // water
-    if (exclude_shader != 2)
+    if (exclude_shader != 2 && exclude_shader != -2)
     {
         programs[2]->use();
         shader_array[2](programs[2], camera);
@@ -258,23 +269,28 @@ int main()
     {
         Time::update_time_passed();
         process_input(window, camera);
-       
+
         glEnable(GL_CLIP_PLANE0);
 
         // Render for the water refraction
-        glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->values[2]); TEST_OPENGL_ERROR();
+        glBindFramebuffer(GL_FRAMEBUFFER,
+                          programs[2]->get_objects()->values[2]);
+        TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        update_shaders(camera, 2, vec4(0, -1, 0, -0.000001));
+        update_shaders(camera, -2, vec4(0, -1, 0, -0.000001));
 
         // Render for the water reflection
         glEnable(GL_CULL_FACE);
-        glBindFramebuffer(GL_FRAMEBUFFER, programs[2]->get_objects()->values[0]); TEST_OPENGL_ERROR();
+        glBindFramebuffer(GL_FRAMEBUFFER,
+                          programs[2]->get_objects()->values[0]);
+        TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_water_cam(camera, water_cam);
         update_shaders(water_cam, 2, vec4(0, 1, 0, -0.00001f));
 
         // Be sure the frame buffer target the screen
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); TEST_OPENGL_ERROR();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         framebuffer_size_callback(window, WIDTH, HEIGHT);
         update_shaders(camera);
