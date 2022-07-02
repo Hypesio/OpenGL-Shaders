@@ -66,14 +66,17 @@ bool init_dunes_shader(program *program, Camera *camera)
     GLuint pos = program->GetUniformLocation("light_pos");
     glUniform3fv(pos, 1, glm::value_ptr(light_pos));
 
-    GLuint pos_cam = program->GetUniformLocation("cam_pos");
-    glUniform3fv(pos_cam, 1, glm::value_ptr(camera->cameraPos));
-
     GLuint id_plane = program->GetUniformLocation("clip_plane");
     glUniform4f(id_plane, clip_plane.x, clip_plane.y, clip_plane.z, clip_plane.w);
 
     // Objects
     obj *objects = program->get_objects();
+
+    GLuint texID1 = program->GetUniformLocation("normal_map");
+    glUniform1i(texID1, 0); TEST_OPENGL_ERROR();
+    glActiveTexture(GL_TEXTURE0);  TEST_OPENGL_ERROR();
+    glBindTexture(GL_TEXTURE_2D, objects->values[0]);  TEST_OPENGL_ERROR();
+
     display_obj(objects);
     glBindVertexArray(0);
 

@@ -65,7 +65,9 @@ public:
 
         prog->set_shader_id(fragment_id, GL_FRAGMENT_SHADER);
 
+        std::cout << "Shader path " << vertex_shader_path<< " and " << fragment_shader_path <<std::endl;
         prog->link_program();
+        std::cout << "Program id was " << prog->get_program_id() << std::endl;
 
         return prog;
     }

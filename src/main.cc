@@ -91,15 +91,16 @@ bool init_object()
         return false;
 
     obj_set_vert_loc(
-        dunes, -1,
-        glGetAttribLocation(programs[0]->get_program_id(), "normalFlat"), -1,
+        dunes, 
+        glGetAttribLocation(programs[0]->get_program_id(), "tangent"),
+        glGetAttribLocation(programs[0]->get_program_id(), "normal_flat"),
+        glGetAttribLocation(programs[0]->get_program_id(), "uv"),
         glGetAttribLocation(programs[0]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
 
     obj_init(dunes);
     programs[0]->set_objects(dunes);
-
-
+    dunes->values[0] = loadTexture("sand/sand_normal_map.jpg", false);
     
 
     // Load obj for skybox
@@ -155,19 +156,19 @@ bool init_object()
         planeWater->values[3] = rendered_texture;
         planeWater->values[4] = depth_buffer;
     }
-    planeWater->values[6] = loadTexture("water_normal.png");
+    planeWater->values[6] = loadTexture("water_normal.png", false);
 
     return true;
 }
 
 bool init_shaders()
 {
-    program *first_prog =
+    program *sand_prog =
         program::make_program(shader_paths[0], shader_paths[1]);
-    if (!first_prog)
+    if (!sand_prog)
         return false;
 
-    programs.push_back(first_prog);
+    programs.push_back(sand_prog);
 
     program *skybox_prog =
         program::make_program(shader_paths[2], shader_paths[3]);

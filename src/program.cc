@@ -135,7 +135,7 @@ GLuint program::GetUniformLocation(const std::string &name) {
     TEST_OPENGL_ERROR();
     if (id == -1)
     {
-        std::cout << "Uniform asked doesn't exist: " << name
+        std::cout << "Uniform asked doesn't exist: " << name << " in program " << program_id_
                   << std::endl;
     }
     return id;
