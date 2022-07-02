@@ -2,8 +2,10 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
+#include <glm/gtx/dual_quaternion.hpp>
 
 #include "camera.hh"
 #include "matrix.hh"
@@ -11,39 +13,35 @@
 // Handle camera movement
 void camera_moves(GLFWwindow *window, Camera *camera, float deltaTime)
 {
-    const float cameraSpeed = 10.0f * deltaTime; // adjust accordingly
+    const float cameraSpeed = 20.0f * deltaTime; // adjust accordingly
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        camera->cameraPos += cameraSpeed * camera->cameraFront;
+        camera->cameraPos += camera->objectForward * cameraSpeed;
         std::cout << "Press W" << std::endl;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        camera->cameraPos -= cameraSpeed * camera->cameraFront;
+        camera->cameraPos -= camera->objectForward * cameraSpeed;
         std::cout << "Press S" << std::endl;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        camera->cameraPos -=
-            glm::normalize(glm::cross(camera->cameraFront, camera->cameraUp))
-            * cameraSpeed;
+        camera->cameraPos -= glm::normalize(glm::cross(camera->objectForward, glm::vec3(0, 1, 0))) * cameraSpeed;
         std::cout << "Press A" << std::endl;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        camera->cameraPos +=
-            glm::normalize(glm::cross(camera->cameraFront, camera->cameraUp))
-            * cameraSpeed;
+        camera->cameraPos += glm::normalize(glm::cross(camera->objectForward, glm::vec3(0, 1, 0))) * cameraSpeed;
         std::cout << "Press D" << std::endl;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
-        camera->cameraPos += camera->cameraUp * cameraSpeed;
+        camera->cameraPos += glm::vec3(0, 1, 0) * cameraSpeed;
         std::cout << "Press Space" << std::endl;
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
-        camera->cameraPos -= camera->cameraUp * cameraSpeed;
+        camera->cameraPos -= glm::vec3(0, 1, 0) * cameraSpeed;
         std::cout << "Press LShift" << std::endl;
     }
 

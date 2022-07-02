@@ -9,6 +9,7 @@ uniform vec3 light_color;
 uniform mat4 projection_matrix;
 uniform mat4 model_view_matrix;
 uniform vec3 cam_pos;
+uniform vec4 clip_plane;
 
 out vec3 out_color;
 out vec3 frag_pos; 
@@ -28,4 +29,7 @@ void main()
     frag_pos = vec3(model_view_matrix * vec4(position, 1.0));
     frag_light_pos = light_pos;
     frag_cam_pos = cam_pos;
+
+    vec4 world_pos = projection_matrix * vec4(position, 1);
+    gl_ClipDistance[0] = dot(vec4(position, 1.0), clip_plane);
 }

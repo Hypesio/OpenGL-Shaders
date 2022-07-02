@@ -15,28 +15,19 @@ class Camera {
 public:
   vec3 cameraPos;
   vec3 cameraFront;
+  vec3 objectForward; 
   vec3 cameraUp;
 
   Camera() {
-    cameraPos = vec3(0.0f, 0.0f, 3.0f);
-    cameraFront = vec3(0.0f, 0.0f, -1.0f);
-    cameraUp = vec3(0.0f, 1.0f, 0.0f);
-    view = glm::mat4(
-        0.57735, -0.33333, 0.57735, 0.00000, 0.00000, 0.66667, 0.57735, 0.00000,
-        -0.57735, -0.33333, 0.57735, 0.00000, 0.00000, 0.00000, -17, 1.00000);
-
     reset_cam();
   }
 
   // Reset camera to neutral position
   void reset_cam() {
-    cameraPos = vec3(0.0f, 0.0f, 3.0f);
-    cameraFront = vec3(0.0f, 0.0f, -1.0f);
+    cameraPos = vec3(0.0f, 20.0f, -3.0f);
+    cameraFront = vec3(0.0f, 0.0f, 1.0f);
+    objectForward = vec3(0.0f, 0.0f, 1.0f);
     cameraUp = vec3(0.0f, 1.0f, 0.0f);
-
-    mat4 view = glm::mat4(
-        0.57735, -0.33333, 0.57735, 0.00000, 0.00000, 0.66667, 0.57735, 0.00000,
-        -0.57735, -0.33333, 0.57735, 0.00000, 0.00000, 0.00000, -17, 1.00000);
     view = lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
   }
 
