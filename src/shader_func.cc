@@ -97,13 +97,13 @@ bool init_skybox_shader(program *program, Camera *camera)
     TEST_OPENGL_ERROR();
     glBindTexture(GL_TEXTURE_CUBE_MAP, objects->mc);
 
-    GLuint cloud1 = program->GetUniformLocation("cloud_tiny");
+    /*GLuint cloud1 = program->GetUniformLocation("cloud_tiny");
     glUniform1i(cloud1, 1); TEST_OPENGL_ERROR();
     glActiveTexture(GL_TEXTURE1);  TEST_OPENGL_ERROR();
     glBindTexture(GL_TEXTURE_2D, objects->values[0]);  TEST_OPENGL_ERROR();
 
     GLuint pos = program->GetUniformLocation("time_passed");
-    glUniform1f(pos, Time::get_time_passed());
+    glUniform1f(pos, Time::get_time_passed());*/
 
     display_obj(objects);
     glBindVertexArray(0);
