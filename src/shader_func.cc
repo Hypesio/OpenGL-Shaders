@@ -15,6 +15,9 @@
 glm::vec3 light_pos(3., 1000., 0.7);
 glm::vec4 clip_plane = vec4(0, 1, 0, 0);
 
+#define HEIGHT 900
+#define WIDTH 1400
+
 void init_view_projection(program *program, glm::mat4 view)
 {
     GLuint model_view_matrix = program->GetUniformLocation("model_view_matrix");
@@ -22,13 +25,10 @@ void init_view_projection(program *program, glm::mat4 view)
     glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, &view[0][0]);
     TEST_OPENGL_ERROR();
 
-    glm::mat4 mat_2 =
-        glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
-                  0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
-                  0.00000, -10.00100, 0.00000);
+    glm::mat4 projection = glm::frustum(-1.0, 1.0, -1.0, 1.0, 1.0, 500.0);
 
     GLuint projection_matrix = program->GetUniformLocation("projection_matrix");
-    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(mat_2));
+    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
     TEST_OPENGL_ERROR();
 }
 
