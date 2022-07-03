@@ -1,7 +1,7 @@
 #version 450
 
 in vec3 out_color;
-in vec3 frag_pos;
+in vec3 view_dir;
 in vec3 frag_light_dir;
 in vec3 frag_normal;
 in vec2 interpolated_uv;
@@ -21,12 +21,12 @@ vec3 CalcBumpedNormal()
 
     vec3 bump_map_normal = texture(normal_map, interpolated_uv).xyz;
 
-    bump_map_normal = 2.0 * bump_map_normal - vec3(1.0, 1.0, 1.0);
+    bump_map_normal = bump_map_normal / 2.0 + vec3(0.5, 0.5, 0.5);
 
     vec3 result_normal;
     mat3 TBN = mat3(tangent, bitangent, normal);
     result_normal = TBN * bump_map_normal;
-    result_normal = normalize(result_normal);
+    //result_normal = normalize(result_normal);
 
     return result_normal;
 }
@@ -39,17 +39,15 @@ void main()
     vec3 normal = CalcBumpedNormal();
 
     // Specular
-    // float spec_strength = 0.3;
-    // vec3 reflect_dir = reflect(-frag_light_dir, frag_normal);
-    // float spec = pow(abs(dot(view_dir, reflect_dir)), 32);
-    // vec3 specular = spec_strength * spec * light;
+    float spec_strength = 0.3;
+    vec3 reflect_dir = reflect(-frag_light_dir, normalize(normal));
+    float spec = pow(abs(dot(view_dir, reflect_dir)), 25);
+    vec3 specular = spec_strength * spec * light;
 
     // Diffuse
-    // vec3 diffuse = clamp(dot(sparkling.xyz, frag_light_dir), 0.0, 1.0) *
-    // light;
-    vec3 diffuse = clamp(dot(normal, frag_light_dir) * light, 0, 1);
+    vec3 diffuse = clamp(dot(normal, frag_light_dir), 0.0, 1.0) * light;
 
-    vec3 final = (diffuse)*out_color;
+    vec3 final = (specular + diffuse) * out_color;
 
     output_color = vec4(final, 1.0);
 }

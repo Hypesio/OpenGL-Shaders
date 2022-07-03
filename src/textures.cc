@@ -29,18 +29,17 @@ unsigned int loadTexture(std::string filename, bool alpha) {
     std::string fullPath = textures_path;
     fullPath = fullPath.append(filename);
     void *data = stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        GLuint type_col = alpha ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, type_col, width,
-                         height, 0, type_col, GL_UNSIGNED_BYTE, data);
-    }
-    else
+    if (!data)
     {
         std::cout << "Texture failed to load : " << fullPath
                     << std::endl;
         return -1;
     }
+
+    GLuint type_col = alpha ? GL_RGBA : GL_RGB;
+    glTexImage2D(GL_TEXTURE_2D, 0, type_col, width,
+                        height, 0, type_col, GL_UNSIGNED_BYTE, data);
+
     free(data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -62,19 +61,18 @@ unsigned int loadCubemap(std::vector<std::string> faces)
         fullPath = fullPath.append(faces[i].c_str());
         void *data =
             stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width,
-                         height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        }
-        else
+        if (!data)
         {
             std::cout << "Cubemap tex failed to load : " << fullPath
                       << std::endl;
             return -1;
         }
+
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width,
+                         height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         free(data);
     }
+
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -133,7 +131,7 @@ int generate_render_texture(GLuint &frame_buffer_number, int width, int height, 
     return 0;
 }
 
-unsigned int loadSandTexture(program *prog)
+unsigned int loadSandTexture()
 {
     GLuint normalmap_id;
     glGenTextures(1, &normalmap_id);
@@ -147,30 +145,17 @@ unsigned int loadSandTexture(program *prog)
 
     int width, height, nrChannels;
     std::string fullPath = textures_path;
-    fullPath = fullPath.append("normalTexture_equlize.png");
+    fullPath = fullPath.append("sand/sand_normal_map_upscale.jpg");
     void *data = stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
     if (!data)
         return -1;
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
                  GL_UNSIGNED_BYTE, data);
-    TEST_OPENGL_ERROR();
 
-    auto normalmap_location = prog->GetUniformLocation( "normalmap_sampler");
-    TEST_OPENGL_ERROR();
-    std::cout << "normalmap_location " << normalmap_location << std::endl;
 
-    glUniform1i(normalmap_location, 2);
-    TEST_OPENGL_ERROR();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    TEST_OPENGL_ERROR();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    TEST_OPENGL_ERROR();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    TEST_OPENGL_ERROR();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    TEST_OPENGL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);    TEST_OPENGL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);    TEST_OPENGL_ERROR();
 
     return normalmap_id;
 }

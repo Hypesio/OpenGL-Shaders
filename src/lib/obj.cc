@@ -1404,7 +1404,7 @@ void obj_set_vert_u(obj *O, int vi, const float u[3])
     O->vv[vi].u[1] = u[1];
     O->vv[vi].u[2] = u[2];
 
-    invalidate(O);
+    // invalidate(O);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1531,6 +1531,15 @@ void obj_get_vert_n(const obj *O, int vi, float *n)
     n[0] = O->vv[vi].n[0];
     n[1] = O->vv[vi].n[1];
     n[2] = O->vv[vi].n[2];
+}
+
+void obj_get_vert_u(const obj *O, int vi, float *u)
+{
+    assert_vert(O, vi);
+
+    u[0] = O->vv[vi].u[0];
+    u[1] = O->vv[vi].u[1];
+    u[2] = O->vv[vi].u[2];
 }
 
 /*----------------------------------------------------------------------------*/
