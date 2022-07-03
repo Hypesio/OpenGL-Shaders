@@ -79,15 +79,8 @@ bool init_dunes_shader(program *program, Camera *camera)
     // Objects
     obj *objects = program->get_objects();
 
-    GLuint texID1 = program->GetUniformLocation("normal_map");
-    glUniform1i(texID1, 0); TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE0); TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, objects->values[0]); TEST_OPENGL_ERROR();
-
-    GLuint texID2 = program->GetUniformLocation("dust_texture");
-    glUniform1i(texID2, 1); TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE1); TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, objects->values[1]); TEST_OPENGL_ERROR();
+    program->set_texture_2D("normal_map", 0, objects->values[0]);
+    program->set_texture_2D("dust_texture", 1, objects->values[1]);
 
     obj_proc(objects);
     TEST_OPENGL_ERROR();
@@ -146,35 +139,10 @@ bool init_water_shader(program *program, Camera *camera)
 
     obj *objects = program->get_objects();
 
-    GLuint texID = program->GetUniformLocation("reflection_texture");
-    glUniform1i(texID, 0);
-    TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, objects->values[1]);
-
-    GLuint texID2 = program->GetUniformLocation("refraction_texture");
-    glUniform1i(texID2, 1);
-    TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE1);
-    TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, objects->values[3]);
-    TEST_OPENGL_ERROR();
-
-    GLuint texID3 = program->GetUniformLocation("refraction_depth_texture");
-    glUniform1i(texID3, 2);
-    TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE2);
-    TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, objects->values[4]);
-    TEST_OPENGL_ERROR();
-
-    GLuint texID4 = program->GetUniformLocation("normal_map");
-    glUniform1i(texID4, 3);
-    TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE3);
-    TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, objects->values[6]);
-    TEST_OPENGL_ERROR();
+    program->set_texture_2D("reflection_texture", 0, objects->values[1]);
+    program->set_texture_2D("refraction_texture", 1, objects->values[3]);
+    program->set_texture_2D("refraction_depth_texture", 2, objects->values[4]);
+    program->set_texture_2D("normal_map", 3, objects->values[6]);
 
     display_obj(objects);
 

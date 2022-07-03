@@ -130,6 +130,13 @@ bool program::isready()
     return ready_;
 }
 
+void program::set_texture_2D(std::string name, int index, int value_index)
+{
+    glUniform1i(this->GetUniformLocation(name), index); TEST_OPENGL_ERROR();
+    glActiveTexture(GL_TEXTURE0 + index); TEST_OPENGL_ERROR();
+    glBindTexture(GL_TEXTURE_2D, value_index); TEST_OPENGL_ERROR();
+}
+
 GLuint program::GetUniformLocation(const std::string &name) {
     GLuint id = glGetUniformLocation(program_id_, name.c_str());
     TEST_OPENGL_ERROR();

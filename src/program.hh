@@ -29,6 +29,7 @@ public:
     GLuint load_shader(const std::string &, GLenum type);
     void link_program();
     GLuint GetUniformLocation(const std::string &name);
+    void set_texture_2D(std::string name, int index, int value_index);
 
     inline GLuint get_program_id()
     {
