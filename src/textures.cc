@@ -145,14 +145,15 @@ unsigned int loadSandTexture()
 
     int width, height, nrChannels;
     std::string fullPath = textures_path;
-    fullPath = fullPath.append("sand/sand_normal_map_upscale.jpg");
+    fullPath = fullPath.append("sand/sand_normal_map.jpg");
     void *data = stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
     if (!data)
         return -1;
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
                  GL_UNSIGNED_BYTE, data);
-
+    
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);    TEST_OPENGL_ERROR();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);    TEST_OPENGL_ERROR();

@@ -7,7 +7,14 @@ in vec3 frag_normal;
 in vec2 interpolated_uv;
 in vec3 frag_tangent;
 
+in float windward_coeff;
+in float leeward_coeff;
+in vec2 upwind_tex_coord;
+in vec2 leeward_tex_coord;
+in vec2 windspot_tex_coord;
+
 uniform sampler2D normal_map;
+uniform sampler2D dust_texture;
 
 layout(location = 0) out vec4 output_color;
 
@@ -38,6 +45,16 @@ void main()
     // Bump mapping
     vec3 normal = CalcBumpedNormal();
 
+    float dust_opacity = 0.05;
+
+    // Dust and wind
+    vec4 windward = texture(dust_texture, upwind_tex_coord);
+    vec4 leeward = texture(dust_texture, leeward_tex_coord);
+
+    vec4 waves = windward * dust_opacity * windward_coeff;
+    waves += leeward * dust_opacity * leeward_coeff;
+    waves *= 1.0 - clamp(texture(dust_texture, windspot_tex_coord).r * 5.0, 0.0, 1.0);
+
     // Specular
     float spec_strength = 0.3;
     vec3 reflect_dir = reflect(-frag_light_dir, normalize(normal));
@@ -46,8 +63,8 @@ void main()
 
     // Diffuse
     vec3 diffuse = clamp(dot(normal, frag_light_dir), 0.0, 1.0) * light;
-
-    vec3 final = (specular + diffuse) * out_color;
+    
+    vec3 final = (specular + diffuse) * out_color + waves.xyz * out_color;
 
     output_color = vec4(final, 1.0);
 }

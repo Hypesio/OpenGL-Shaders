@@ -65,7 +65,10 @@ bool init_dunes_shader(program *program, Camera *camera)
 
     GLuint pos = program->GetUniformLocation("light_pos");
     glUniform3fv(pos, 1, glm::value_ptr(light_pos));
-    
+
+    pos = program->GetUniformLocation("time_passed");
+    glUniform1f(pos, Time::get_time_passed());
+
     GLuint pos_cam = program->GetUniformLocation("camera_pos");
     glUniform3fv(pos_cam, 1, glm::value_ptr(camera->cameraPos));
 
@@ -77,12 +80,14 @@ bool init_dunes_shader(program *program, Camera *camera)
     obj *objects = program->get_objects();
 
     GLuint texID1 = program->GetUniformLocation("normal_map");
-    glUniform1i(texID1, 0);
-    TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE0);
-    TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, objects->values[0]);
-    TEST_OPENGL_ERROR();
+    glUniform1i(texID1, 0); TEST_OPENGL_ERROR();
+    glActiveTexture(GL_TEXTURE0); TEST_OPENGL_ERROR();
+    glBindTexture(GL_TEXTURE_2D, objects->values[0]); TEST_OPENGL_ERROR();
+
+    GLuint texID2 = program->GetUniformLocation("dust_texture");
+    glUniform1i(texID2, 1); TEST_OPENGL_ERROR();
+    glActiveTexture(GL_TEXTURE1); TEST_OPENGL_ERROR();
+    glBindTexture(GL_TEXTURE_2D, objects->values[1]); TEST_OPENGL_ERROR();
 
     obj_proc(objects);
     TEST_OPENGL_ERROR();
