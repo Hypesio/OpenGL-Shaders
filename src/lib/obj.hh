@@ -150,6 +150,7 @@ void         obj_get_mtrl_s   (const obj *, int, int, float *);
 void obj_get_vert_v(const obj *, int, float *);
 void obj_get_vert_t(const obj *, int, float *);
 void obj_get_vert_n(const obj *, int, float *);
+void obj_get_vert_u(const obj *, int, float *);
 
 void obj_get_poly(const obj *, int, int, int *);
 void obj_get_line(const obj *, int, int, int *);

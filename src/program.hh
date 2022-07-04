@@ -2,6 +2,9 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <glm/mat4x4.hpp>
+#include <glm/matrix.hpp>
+#include <glm/vec3.hpp>
 #include <iostream>
 #include <string>
 
@@ -28,7 +31,8 @@ public:
 
     GLuint load_shader(const std::string &, GLenum type);
     void link_program();
-    GLuint GetUniformLocation(const std::string &name);
+    GLint GetUniformLocation(const std::string &name) const;
+    void set_texture_2D(const std::string &name, int index, int value_index);
 
     inline GLuint get_program_id()
     {
@@ -68,6 +72,46 @@ public:
         prog->link_program();
 
         return prog;
+    }
+
+    inline void set_uniform_int(const std::string &name, int value) const
+    {
+        glUniform1i(GetUniformLocation(name), value); 
+    }
+    
+    inline void set_uniform_float(const std::string &name, float value) const
+    { 
+        glUniform1f(GetUniformLocation(name), value); 
+    }
+    
+    inline void set_uniform_vec2(const std::string &name, const glm::vec2 &value) const
+    { 
+        glUniform2fv(GetUniformLocation(name), 1, &value[0]); 
+    }
+
+    inline void set_uniform_vec2(const std::string &name, float x, float y) const
+    { 
+        glUniform2f(GetUniformLocation(name), x, y); 
+    }
+    
+    inline void set_uniform_vec3(const std::string &name, const glm::vec3 &value) const
+    { 
+        glUniform3fv(GetUniformLocation(name), 1, &value[0]); 
+    }
+
+    inline void set_uniform_vec3(const std::string &name, float x, float y, float z) const
+    { 
+        glUniform3f(GetUniformLocation(name), x, y, z); 
+    }
+
+    inline void set_uniform_vec4(const std::string &name, const glm::vec4 &value) const
+    { 
+        glUniform4fv(GetUniformLocation(name), 1, &value[0]); 
+    }
+
+    inline void set_uniform_vec4(const std::string &name, float x, float y, float z, float w) 
+    { 
+        glUniform4f(GetUniformLocation(name), x, y, z, w); 
     }
 
 private:

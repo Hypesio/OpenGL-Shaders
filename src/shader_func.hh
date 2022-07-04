@@ -3,7 +3,6 @@
 #include <GL/glew.h>
 #include <glm/ext/vector_float4.hpp>
 #include "program.hh"
-#include "matrix.hh"
 #include "camera.hh"
 
 #define NB_SHADERS 2
@@ -19,8 +18,8 @@ void set_clip_plane(vec4 new_clip_plane);
 void set_time_passed(float value);
 
 static std::string shader_paths[] = {
-    "shaders/vertex.vert",
-    "shaders/fragment.frag",
+    "shaders/sand_vertex.vert",
+    "shaders/sand_fragment.frag",
     "shaders/skybox_vertex.vert", 
     "shaders/skybox_fragment.frag",
     "shaders/water_vertex.vert",

@@ -15,6 +15,8 @@
 glm::vec3 light_pos(3., 1000., 0.7);
 glm::vec4 clip_plane = vec4(0, 1, 0, 0);
 
+#define HEIGHT 900
+#define WIDTH 1400
 
 void init_view_projection(program *program, glm::mat4 view)
 {
@@ -23,13 +25,10 @@ void init_view_projection(program *program, glm::mat4 view)
     glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, &view[0][0]);
     TEST_OPENGL_ERROR();
 
-    glm::mat4 mat_2 =
-        glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
-                  0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
-                  0.00000, -10.00100, 0.00000);
+    glm::mat4 projection = glm::frustum(-1.0, 1.0, -1.0, 1.0, 1.0, 500.0);
 
     GLuint projection_matrix = program->GetUniformLocation("projection_matrix");
-    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(mat_2));
+    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
     TEST_OPENGL_ERROR();
 }
 
@@ -49,7 +48,8 @@ void display_obj(obj *objects)
     }
 }
 
-void set_clip_plane(vec4 new_clip_plane) {
+void set_clip_plane(vec4 new_clip_plane)
+{
     clip_plane = new_clip_plane;
 }
 
@@ -59,25 +59,23 @@ bool init_dunes_shader(program *program, Camera *camera)
     //  Shaders
     init_view_projection(program, camera->get_view());
 
-    glm::vec3 color_vec(0.9, 0.44, 0);
-    GLuint color = program->GetUniformLocation("color");
-    glUniform3fv(color, 1, glm::value_ptr(color_vec));
-
-    glm::vec3 light_color_vec(1, 1, 0.6);
-    GLuint light_color = program->GetUniformLocation("light_color");
-    glUniform3fv(light_color, 1, glm::value_ptr(light_color_vec));
-
-    GLuint pos = program->GetUniformLocation("light_pos");
-    glUniform3fv(pos, 1, glm::value_ptr(light_pos));
-
-    GLuint pos_cam = program->GetUniformLocation("cam_pos");
-    glUniform3fv(pos_cam, 1, glm::value_ptr(camera->cameraPos));
-
-    GLuint id_plane = program->GetUniformLocation("clip_plane");
-    glUniform4f(id_plane, clip_plane.x, clip_plane.y, clip_plane.z, clip_plane.w);
+    glm::vec3 color_vec(0.97, 0.89, 0.71);
+    program->set_uniform_vec3("color", color_vec);
+    program->set_uniform_vec3("light_pos", light_pos);
+    program->set_uniform_float("time_passed", Time::get_time_passed());
+    program->set_uniform_vec3("camera_pos", camera->cameraPos);
+    program->set_uniform_vec4("clip_plane", clip_plane.x, clip_plane.y, clip_plane.z,
+                clip_plane.w);
 
     // Objects
     obj *objects = program->get_objects();
+
+    program->set_texture_2D("normal_map", 0, objects->values[0]);
+    program->set_texture_2D("dust_texture", 1, objects->values[1]);
+
+    obj_proc(objects);
+    TEST_OPENGL_ERROR();
+
     display_obj(objects);
     glBindVertexArray(0);
 
@@ -117,40 +115,19 @@ bool init_water_shader(program *program, Camera *camera)
     glm::mat4 view = camera->get_view();
     init_view_projection(program, view);
 
-    GLuint id_plane = program->GetUniformLocation("clip_plane");
-    glUniform4f(id_plane, clip_plane.x, clip_plane.y, clip_plane.z, clip_plane.w);
-
-    GLuint pos_cam = program->GetUniformLocation("cam_pos");
-    glUniform3fv(pos_cam, 1, glm::value_ptr(camera->cameraPos));
-
-    GLuint pos = program->GetUniformLocation("light_pos");
-    glUniform3fv(pos, 1, glm::value_ptr(light_pos));
-
-    pos = program->GetUniformLocation("time_passed");
-    glUniform1f(pos, Time::get_time_passed());
+    program->set_uniform_vec4("clip_plane", clip_plane.x, clip_plane.y, clip_plane.z,
+                clip_plane.w);
+    program->set_uniform_vec3("light_pos", light_pos);
+    program->set_uniform_vec3("cam_pos", camera->cameraPos);
+    program->set_uniform_float("time_passed", Time::get_time_passed());
 
     obj *objects = program->get_objects();
-    
-    GLuint texID = program->GetUniformLocation("reflection_texture");
-    glUniform1i(texID, 0); TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, objects->values[1]);
 
-    GLuint texID2 = program->GetUniformLocation("refraction_texture");
-    glUniform1i(texID2, 1); TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE1);  TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, objects->values[3]);  TEST_OPENGL_ERROR();
+    program->set_texture_2D("reflection_texture", 0, objects->values[1]);
+    program->set_texture_2D("refraction_texture", 1, objects->values[3]);
+    program->set_texture_2D("refraction_depth_texture", 2, objects->values[4]);
+    program->set_texture_2D("normal_map", 3, objects->values[6]);
 
-    GLuint texID3 = program->GetUniformLocation("refraction_depth_texture");
-    glUniform1i(texID3, 2); TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE2);  TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, objects->values[4]);  TEST_OPENGL_ERROR();
-
-    GLuint texID4 = program->GetUniformLocation("normal_map");
-    glUniform1i(texID4, 3); TEST_OPENGL_ERROR();
-    glActiveTexture(GL_TEXTURE3);  TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, objects->values[6]);  TEST_OPENGL_ERROR();
-    
     display_obj(objects);
 
     glBindVertexArray(0);
@@ -158,13 +135,15 @@ bool init_water_shader(program *program, Camera *camera)
     return true;
 }
 
-void update_water_cam(Camera *main_cam, Camera *water_cam) {
+void update_water_cam(Camera *main_cam, Camera *water_cam)
+{
     // Set a the good position
-    water_cam->cameraPos = glm::vec3(main_cam->cameraPos.x, -main_cam->cameraPos.y, main_cam->cameraPos.z);
-    
+    water_cam->cameraPos = glm::vec3(
+        main_cam->cameraPos.x, -main_cam->cameraPos.y, main_cam->cameraPos.z);
+
     // Adapt camera front
     vec3 front = main_cam->cameraFront;
     water_cam->cameraFront = glm::vec3(front.x, -front.y, front.z);
-    
+
     water_cam->update_view();
 }

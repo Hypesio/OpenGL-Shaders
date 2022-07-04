@@ -1,8 +1,11 @@
 #include "textures.hh"
 
 #include <endian.h>
+#include <GL/glew.h>
+#include <GL/gl.h>
 #include <iostream>
 
+#include "program.hh"
 #include "lib/obj.hh"
 #include "lib/stb_image.h"
 #include "program.hh"
@@ -26,18 +29,17 @@ unsigned int loadTexture(std::string filename, bool alpha) {
     std::string fullPath = textures_path;
     fullPath = fullPath.append(filename);
     void *data = stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
-    if (data)
-    {
-        GLuint type_col = alpha ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, type_col, width,
-                         height, 0, type_col, GL_UNSIGNED_BYTE, data);
-    }
-    else
+    if (!data)
     {
         std::cout << "Texture failed to load : " << fullPath
                     << std::endl;
         return -1;
     }
+
+    GLuint type_col = alpha ? GL_RGBA : GL_RGB;
+    glTexImage2D(GL_TEXTURE_2D, 0, type_col, width,
+                        height, 0, type_col, GL_UNSIGNED_BYTE, data);
+
     free(data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -59,19 +61,18 @@ unsigned int loadCubemap(std::vector<std::string> faces)
         fullPath = fullPath.append(faces[i].c_str());
         void *data =
             stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width,
-                         height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        }
-        else
+        if (!data)
         {
             std::cout << "Cubemap tex failed to load : " << fullPath
                       << std::endl;
             return -1;
         }
+
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width,
+                         height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         free(data);
     }
+
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -128,4 +129,34 @@ int generate_render_texture(GLuint &frame_buffer_number, int width, int height, 
     glBindFramebuffer(GL_FRAMEBUFFER, 0); TEST_OPENGL_ERROR();
 
     return 0;
+}
+
+unsigned int loadSandTexture()
+{
+    GLuint normalmap_id;
+    glGenTextures(1, &normalmap_id);
+    TEST_OPENGL_ERROR();
+
+    glActiveTexture(GL_TEXTURE2);
+    TEST_OPENGL_ERROR();
+
+    glBindTexture(GL_TEXTURE_2D, normalmap_id);
+    TEST_OPENGL_ERROR();
+
+    int width, height, nrChannels;
+    std::string fullPath = textures_path;
+    fullPath = fullPath.append("sand/sand_normal_map.jpg");
+    void *data = stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
+    if (!data)
+        return -1;
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, data);
+    
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);    TEST_OPENGL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);    TEST_OPENGL_ERROR();
+
+    return normalmap_id;
 }

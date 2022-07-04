@@ -1,4 +1,5 @@
 #include "program.hh"
+
 #include <string>
 
 void program::set_shader_id(GLuint shd_id, GLenum type)
@@ -31,7 +32,8 @@ GLuint program::load_shader(const std::string &src, GLenum type)
         if (log)
         {
             auto str = type == GL_VERTEX_SHADER ? " vertex " : "fragment ";
-            std::cerr << "Shader " << str << shader_id << " : " << log << std::endl;
+            std::cerr << "Shader " << str << shader_id << " : " << log
+                      << std::endl;
             std::free(log);
         }
 
@@ -130,13 +132,25 @@ bool program::isready()
     return ready_;
 }
 
-GLuint program::GetUniformLocation(const std::string &name) {
-    GLuint id = glGetUniformLocation(program_id_, name.c_str());
+void program::set_texture_2D(const std::string &name, int index,
+                             int value_index)
+{
+    glUniform1i(this->GetUniformLocation(name), index);
+    TEST_OPENGL_ERROR();
+    glActiveTexture(GL_TEXTURE0 + index);
+    TEST_OPENGL_ERROR();
+    glBindTexture(GL_TEXTURE_2D, value_index);
+    TEST_OPENGL_ERROR();
+}
+
+GLint program::GetUniformLocation(const std::string &name) const
+{
+    GLint id = glGetUniformLocation(program_id_, name.c_str());
     TEST_OPENGL_ERROR();
     if (id == -1)
     {
-        std::cout << "Uniform asked doesn't exist: " << name
-                  << std::endl;
+        std::cout << "Uniform asked doesn't exist: " << name << " in program "
+                  << program_id_ << std::endl;
     }
     return id;
 }

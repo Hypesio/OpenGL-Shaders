@@ -8,7 +8,6 @@
 #include <glm/gtx/dual_quaternion.hpp>
 
 #include "camera.hh"
-#include "matrix.hh"
 
 // Handle camera movement
 void camera_moves(GLFWwindow *window, Camera *camera, float deltaTime)

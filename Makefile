@@ -8,9 +8,9 @@
 
 CC = g++
 
-CPP_FILES = src/matrix.cc src/program.cc src/input.cc src/lib/obj.cc src/utils.cc src/shader_func.cc src/textures.cc src/lib/stb_image.cc
+CPP_FILES = src/program.cc src/input.cc src/lib/obj.cc src/utils.cc src/shader_func.cc src/textures.cc src/lib/stb_image.cc
 CPP_FILES +=
-HXX_FILES = src/matrix.hh src/program.hh src/object_vbo.hh src/input.hh src/camera.hh src/mouse.hh src/lib/obj.hh src/utils.hh src/shader_func.hh src/textures.hh src/lib/stb_image.h
+HXX_FILES = src/program.hh src/object_vbo.hh src/input.hh src/camera.hh src/mouse.hh src/lib/obj.hh src/utils.hh src/shader_func.hh src/textures.hh src/lib/stb_image.h
 HXX_FILES +=
 OBJ_FILES = $(CPP_FILES:.cc=.o)
 
@@ -66,6 +66,8 @@ main-build: pre-build build
 build: $(OBJ_FILES)
 	$(CC) $(MAIN_FILE) -o $(DIST) $(OBJ_FILES) $(CXX_FLAGS) $(LDXX_FLAGS)
 
+run: pre-build build
+	./${DIST}
 
 %.o: %.cc %.hh
 	@$(call color,2)
@@ -84,7 +86,7 @@ build: $(OBJ_FILES)
 	fi ;\
 	exit $$sta
 
-.PHONY: all clean pre-build post-build main-build build
+.PHONY: all clean pre-build post-build main-build build run
 
 clean:
 	rm -f $(OBJ_FILES)
