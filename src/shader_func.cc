@@ -25,7 +25,11 @@ void init_view_projection(program *program, glm::mat4 view)
     glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, &view[0][0]);
     TEST_OPENGL_ERROR();
 
-    glm::mat4 projection = glm::frustum(-1.0, 1.0, -1.0, 1.0, 1.0, 500.0);
+    glm::mat4 projection = glm::frustum(-0.1, 0.1, -0.1, 0.1, 0.1, 1000.0);
+    /*glm::mat4 projection =
+        glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
+                  0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
+                  0.00000, -10.00100, 0.00000);*/
 
     GLuint projection_matrix = program->GetUniformLocation("projection_matrix");
     glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));

@@ -24,8 +24,8 @@ uniform float time_passed;
 
 float normal_map_tilling1 = 0.3;
 float normal_map_tilling2 = 0.44;
-float normal_map_speed1 = 0.2;
-float normal_map_speed2 = 0.5;
+float normal_map_speed1 = -0.2;
+float normal_map_speed2 = -0.5;
 
 void main()
 {
@@ -46,8 +46,8 @@ void main()
     // Normal map 
     float speed1 = time_passed * normal_map_speed1;
     float speed2 = time_passed * normal_map_speed2;
-    normal_map_coords1 = vec2((position.x + speed1) / 2.0 + 0.5, (position.z + speed1) / 2.0 + 0.5) * normal_map_tilling1;
-    normal_map_coords2 = vec2((position.x + speed2) / 2.0 + 0.5, (position.z + speed2) / 2.0 + 0.5) * normal_map_tilling2;
+    normal_map_coords1 = vec2((position.z + speed1) / 2.0 + 0.5, (-position.x + speed1) / 2.0 + 0.5) * normal_map_tilling1;
+    normal_map_coords2 = vec2((position.z + speed2) / 2.0 + 0.5, (-position.x + speed2) / 2.0 + 0.5) * normal_map_tilling2;
 
     // Reflection force - Schilck approximation
     float reflect_alpha = 0.25;
