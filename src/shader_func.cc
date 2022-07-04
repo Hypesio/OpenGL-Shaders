@@ -95,9 +95,9 @@ bool init_skybox_shader(program *program, Camera *camera)
     init_view_projection(program, view);
 
     obj *objects = program->get_objects();
-    glActiveTexture(GL_TEXTURE0);
+    /*glActiveTexture(GL_TEXTURE0);
     TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_CUBE_MAP, objects->mc);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, objects->mc);*/
 
     /*GLuint cloud1 = program->GetUniformLocation("cloud_tiny");
     glUniform1i(cloud1, 1); TEST_OPENGL_ERROR();
