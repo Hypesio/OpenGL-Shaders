@@ -99,7 +99,7 @@ bool init_object()
 
     obj_init(dunes);
     programs[0]->set_objects(dunes);
-    dunes->values[0] = loadSandTexture();
+    dunes->values[0] = loadTexture("sand/sand_normal_map.jpg");
     dunes->values[1] = loadTexture("sand/upwind.png");
     
 

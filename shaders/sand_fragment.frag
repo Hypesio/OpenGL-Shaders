@@ -16,6 +16,9 @@ in vec2 windspot_tex_coord;
 uniform sampler2D normal_map;
 uniform sampler2D dust_texture;
 
+float normal_map_tilling1 = 0.3;
+float normal_map_tilling2 = 0.44;
+
 layout(location = 0) out vec4 output_color;
 
 vec3 CalcBumpedNormal()
@@ -28,7 +31,7 @@ vec3 CalcBumpedNormal()
 
     vec3 bump_map_normal = texture(normal_map, interpolated_uv).xyz;
 
-    bump_map_normal = bump_map_normal / 2.0 + vec3(0.5, 0.5, 0.5);
+    bump_map_normal = bump_map_normal / 2.0 + vec3(0.5, 0.5, 0.5);  
 
     vec3 result_normal;
     mat3 TBN = mat3(tangent, bitangent, normal);
