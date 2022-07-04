@@ -3,7 +3,6 @@
 #include <GL/glew.h>
 #include <glm/ext/vector_float4.hpp>
 #include "program.hh"
-#include "matrix.hh"
 #include "camera.hh"
 
 #define NB_SHADERS 2

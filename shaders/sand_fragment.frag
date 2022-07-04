@@ -33,7 +33,7 @@ vec3 CalcBumpedNormal()
     vec3 result_normal;
     mat3 TBN = mat3(tangent, bitangent, normal);
     result_normal = TBN * bump_map_normal;
-    //result_normal = normalize(result_normal);
+    result_normal = normalize(result_normal);
 
     return result_normal;
 }
@@ -57,7 +57,7 @@ void main()
 
     // Specular
     float spec_strength = 0.3;
-    vec3 reflect_dir = reflect(-frag_light_dir, normalize(normal));
+    vec3 reflect_dir = reflect(-frag_light_dir, normal);
     float spec = pow(abs(dot(view_dir, reflect_dir)), 25);
     vec3 specular = spec_strength * spec * light;
 

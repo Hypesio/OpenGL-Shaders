@@ -44,10 +44,10 @@ void main()
     leeward_coeff = clamp(14.0 * dot(normal_flat, normalize(vec3(-1.0, 0.0, -0.2))), 0.0, 1.0);
 
     upwind_tex_coord = uv *  vec2(100.0, 10.0);
-    upwind_tex_coord.y += time_passed * 0.5;
+    upwind_tex_coord.y += time_passed * 0.2;
 
     leeward_tex_coord = uv * vec2(60.0, 30.0);
-    leeward_tex_coord.y += time_passed * 0.5;
+    leeward_tex_coord.y += time_passed * 0.2;
 
     windspot_tex_coord = uv * vec2(1.5, 1.5);
     windspot_tex_coord.x += time_passed * 0.1;

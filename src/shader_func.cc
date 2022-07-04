@@ -60,20 +60,11 @@ bool init_dunes_shader(program *program, Camera *camera)
     init_view_projection(program, camera->get_view());
 
     glm::vec3 color_vec(0.97, 0.89, 0.71);
-    GLuint color = program->GetUniformLocation("color");
-    glUniform3fv(color, 1, glm::value_ptr(color_vec));
-
-    GLuint pos = program->GetUniformLocation("light_pos");
-    glUniform3fv(pos, 1, glm::value_ptr(light_pos));
-
-    pos = program->GetUniformLocation("time_passed");
-    glUniform1f(pos, Time::get_time_passed());
-
-    GLuint pos_cam = program->GetUniformLocation("camera_pos");
-    glUniform3fv(pos_cam, 1, glm::value_ptr(camera->cameraPos));
-
-    GLuint id_plane = program->GetUniformLocation("clip_plane");
-    glUniform4f(id_plane, clip_plane.x, clip_plane.y, clip_plane.z,
+    program->set_uniform_vec3("color", color_vec);
+    program->set_uniform_vec3("light_pos", light_pos);
+    program->set_uniform_float("time_passed", Time::get_time_passed());
+    program->set_uniform_vec3("camera_pos", camera->cameraPos);
+    program->set_uniform_vec4("clip_plane", clip_plane.x, clip_plane.y, clip_plane.z,
                 clip_plane.w);
 
     // Objects
@@ -124,18 +115,11 @@ bool init_water_shader(program *program, Camera *camera)
     glm::mat4 view = camera->get_view();
     init_view_projection(program, view);
 
-    GLuint id_plane = program->GetUniformLocation("clip_plane");
-    glUniform4f(id_plane, clip_plane.x, clip_plane.y, clip_plane.z,
+    program->set_uniform_vec4("clip_plane", clip_plane.x, clip_plane.y, clip_plane.z,
                 clip_plane.w);
-
-    GLuint pos_cam = program->GetUniformLocation("cam_pos");
-    glUniform3fv(pos_cam, 1, glm::value_ptr(camera->cameraPos));
-
-    GLuint pos = program->GetUniformLocation("light_pos");
-    glUniform3fv(pos, 1, glm::value_ptr(light_pos));
-
-    pos = program->GetUniformLocation("time_passed");
-    glUniform1f(pos, Time::get_time_passed());
+    program->set_uniform_vec3("light_pos", light_pos);
+    program->set_uniform_vec3("cam_pos", camera->cameraPos);
+    program->set_uniform_float("time_passed", Time::get_time_passed());
 
     obj *objects = program->get_objects();
 

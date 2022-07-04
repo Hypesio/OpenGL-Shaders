@@ -9,7 +9,6 @@
 #include "camera.hh"
 #include "input.hh"
 #include "lib/obj.hh"
-#include "matrix.hh"
 #include "mouse.hh"
 #include "object_vbo.hh"
 #include "program.hh"
