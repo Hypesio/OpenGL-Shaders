@@ -41,6 +41,7 @@ void display_obj(obj *objects)
 
         const struct obj_surf *sp = objects->sv;
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
+
         TEST_OPENGL_ERROR();
         glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
                        (const GLvoid *)0);
@@ -63,7 +64,7 @@ bool init_dunes_shader(program *program, Camera *camera)
     program->set_uniform_vec3("color", color_vec);
     program->set_uniform_vec3("light_pos", light_pos);
     program->set_uniform_float("time_passed", Time::get_time_passed());
-    program->set_uniform_vec3("camera_pos", camera->cameraPos);
+    //program->set_uniform_vec3("camera_pos", camera->cameraPos);
     program->set_uniform_vec4("clip_plane", clip_plane.x, clip_plane.y, clip_plane.z,
                 clip_plane.w);
 
