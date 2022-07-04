@@ -107,9 +107,9 @@ bool init_object()
     
 
     // Load obj for skybox
-    unsigned int cubemapTexture = loadSkybox();
+    //unsigned int cubemapTexture = loadSkybox();
 
-    obj *skybox = obj_create("data/cube.obj");
+    obj *skybox = obj_create("data/sphere.obj");
     obj_set_vert_loc(
         skybox, -1,
         glGetAttribLocation(programs[1]->get_program_id(), "normalFlat"),
@@ -118,8 +118,8 @@ bool init_object()
     TEST_OPENGL_ERROR();
     obj_init(skybox);
     programs[1]->set_objects(skybox);
-    skybox->mc = cubemapTexture;
-    skybox->values[0] = loadTexture("cloud_tiny.png", true);
+    //skybox->mc = cubemapTexture;
+    //skybox->values[0] = loadTexture("cloud_tiny.png", true);
 
 
     // Load obj for water
