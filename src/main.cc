@@ -85,7 +85,7 @@ bool init_GL()
 bool init_object()
 {
     // Load obj from file
-    obj *dunes = obj_create("data/simple_dunes.obj");
+    obj *dunes = obj_create("data/dunes_with_big_lake.obj");
     if (!dunes)
     {
         std::cout << "Dunes cannot be created" << std::endl;
