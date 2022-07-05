@@ -9,17 +9,19 @@ out vec4 visual_space;
 out float reflection_force; 
 out vec3 frag_pos; 
 out vec3 frag_normal;
-out vec3 frag_light_pos;
+out vec3 frag_light_dir;
 out vec3 frag_cam_pos;
 out vec2 normal_map_coords1;
 out vec2 normal_map_coords2;
 out vec3 vertex_position;
+out vec4 frag_pos_light_space;
 
 uniform mat4 projection_matrix;
 uniform mat4 model_view_matrix;
+uniform mat4 light_projection_matrix;
 uniform vec4 clip_plane; 
 uniform vec3 cam_pos;
-uniform vec3 light_pos;
+uniform vec3 light_dir;
 uniform float time_passed;
 
 float normal_map_tilling1 = 0.3;
@@ -39,7 +41,7 @@ void main()
     frag_pos = vec3(model_view_matrix * vec4(position, 1.0));
     frag_normal = normalize(normal_flat);
     frag_pos = vec3(model_view_matrix * vec4(position, 1.0));
-    frag_light_pos = light_pos;
+    frag_light_dir = light_dir;
     frag_cam_pos = cam_pos;
     vertex_position = position;
 
@@ -54,4 +56,7 @@ void main()
     reflection_force = 1 - pow(dot(normal_flat, normalize(cam_pos - position)), reflect_alpha);
 
     uv_coords = uv;
+
+    // light
+    frag_pos_light_space = light_projection_matrix * model_view_matrix * vec4(position, 1.0);
 } 

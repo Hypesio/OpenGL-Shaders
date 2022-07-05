@@ -14,9 +14,12 @@
 #include "program.hh"
 #include "shader_func.hh"
 #include "textures.hh"
+#include "light.hh"
 
 #define HEIGHT 900
 #define WIDTH 1400
+#define HEIGHT_SHADOW 1000
+#define WIDTH_SHADOW 1000
 
 std::vector<program *> programs;
 
@@ -73,7 +76,7 @@ bool init_GL()
     // glEnable(GL_CULL_FACE);
     TEST_OPENGL_ERROR();
 
-    glClearColor(0.4, 0.4, 0.4, 1.0);
+    glClearColor(1.0, 0.0, 0.0, 1.0);
     TEST_OPENGL_ERROR();
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -98,9 +101,11 @@ bool init_object()
     TEST_OPENGL_ERROR();
 
     obj_init(dunes);
-    programs[0]->set_objects(dunes);
-    dunes->values[0] = loadSandTexture();
-    dunes->values[1] = loadTexture("sand/upwind.png");
+    std::cout << "Start display" << std::endl;
+    programs[0]->add_object(dunes);
+    programs[0]->values[0] = loadSandTexture();
+    programs[0]->values[1] = loadTexture("sand/upwind.png");
+    
     
 
     // Load obj for skybox
@@ -114,7 +119,7 @@ bool init_object()
         glGetAttribLocation(programs[1]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
     obj_init(skybox);
-    programs[1]->set_objects(skybox);
+    programs[1]->add_object(skybox);
     //skybox->mc = cubemapTexture;
     //skybox->values[0] = loadTexture("cloud_tiny.png", true);
 
@@ -128,7 +133,7 @@ bool init_object()
         glGetAttribLocation(programs[2]->get_program_id(), "position"));
     TEST_OPENGL_ERROR();
     obj_init(planeWater);
-    programs[2]->set_objects(planeWater);
+    programs[2]->add_object(planeWater);
 
     // Frame buffer reflection
     GLuint frame_buffer_number, depth_buffer, rendered_texture;
@@ -139,9 +144,10 @@ bool init_object()
                   << std::endl;
     else
     {
-        planeWater->values[0] = frame_buffer_number;
-        planeWater->values[1] = rendered_texture;
+        programs[2]->values[0] = frame_buffer_number;
+        programs[2]->values[1] = rendered_texture;
     }
+    
 
     // Frame buffer refraction
     GLuint frame_buffer_number2;
@@ -152,11 +158,16 @@ bool init_object()
                   << std::endl;
     else
     {
-        planeWater->values[2] = frame_buffer_number2;
-        planeWater->values[3] = rendered_texture;
-        planeWater->values[4] = depth_buffer;
+        programs[2]->values[2] = frame_buffer_number2;
+        programs[2]->values[3] = rendered_texture;
+        programs[2]->values[4] = depth_buffer;
     }
-    planeWater->values[6] = loadTexture("water_normal.png", false);
+    programs[2]->values[6] = loadTexture("water_normal.png", false);
+
+
+    // Shadow shader - Need to have all objects
+    programs[3]->add_object(dunes); 
+    programs[3]->add_object(planeWater);
 
     return true;
 }
@@ -183,6 +194,12 @@ bool init_shaders()
         return false;
 
     programs.push_back(water_prog);
+
+    program * shadow_prog = program::make_program(shader_paths[6], shader_paths[7]);
+    if (!shadow_prog)
+        return false;
+
+    programs.push_back(shadow_prog);
 
     return true;
 }
@@ -253,7 +270,6 @@ int main()
         std::cerr << "Programs not initialized !" << std::endl;
         std::exit(-1);
     }
-
     if (!init_object())
     {
         TEST_OPENGL_ERROR();
@@ -262,6 +278,13 @@ int main()
 
     Camera *camera = new Camera();
     Camera *water_cam = new Camera();
+
+    // Main light creation
+    GLuint fbo_shadow, depth_buffer; 
+    generate_depth_texture_shadow(fbo_shadow, WIDTH_SHADOW, HEIGHT_SHADOW, depth_buffer);
+    vec3 light_pos = vec3(300., 1000., 0.7);
+    DirectionalLight* light = new DirectionalLight(light_pos, fbo_shadow, depth_buffer);
+    set_light(light);
 
     Mouse::init_mouse(camera);
     glfwSetCursorPosCallback(window, Mouse::mouse_callback);
@@ -274,11 +297,24 @@ int main()
         Time::update_time_passed();
         process_input(window, camera);
 
+        // Render from lights for shadows 
+        glViewport(0, 0, WIDTH_SHADOW, HEIGHT_SHADOW);
+        glBindFramebuffer(GL_FRAMEBUFFER, light->fbo_shadow);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+        //glViewport(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2); 
+        //glViewport(0, 0, WIDTH, HEIGHT);
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW); // Backface display 
+        programs[3]->use();
+        shader_array[3](programs[3], camera);
+        glDisable(GL_CULL_FACE);
+
         glEnable(GL_CLIP_PLANE0);
+        glViewport(0, 0, WIDTH, HEIGHT);
 
         // Render for the water refraction
         glBindFramebuffer(GL_FRAMEBUFFER,
-                          programs[2]->get_objects()->values[2]);
+                          programs[2]->values[2]);
         TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_shaders(camera, -2, vec4(0, -1, 0, -0.000001));
@@ -286,7 +322,7 @@ int main()
         // Render for the water reflection
         glEnable(GL_CULL_FACE);
         glBindFramebuffer(GL_FRAMEBUFFER,
-                          programs[2]->get_objects()->values[0]);
+                          programs[2]->values[0]);
         TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_water_cam(camera, water_cam);

@@ -3,6 +3,7 @@
 #include <endian.h>
 #include <GL/glew.h>
 #include <GL/gl.h>
+#include <glm/ext/vector_float4.hpp>
 #include <iostream>
 
 #include "program.hh"
@@ -122,6 +123,44 @@ int generate_render_texture(GLuint &frame_buffer_number, int width, int height, 
 
     GLenum drawBuffs[] = {GL_COLOR_ATTACHMENT0}; TEST_OPENGL_ERROR();
     glDrawBuffers(1, drawBuffs); TEST_OPENGL_ERROR();
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        return -1;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); TEST_OPENGL_ERROR();
+
+    return 0;
+}
+
+int generate_depth_texture_shadow(GLuint &frame_buffer_number, int width, int height, GLuint &depth_buffer_texture) {
+    // Create the frame buffer target
+    glGenFramebuffers(1, &frame_buffer_number);
+    glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_number);
+
+    // Add a depth buffer
+    GLuint depth_buffer;
+    glGenRenderbuffers(1, &depth_buffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                              GL_RENDERBUFFER, depth_buffer); TEST_OPENGL_ERROR();
+
+    // Create a depth texture 
+    glGenTextures(1, &depth_buffer_texture);
+    glBindTexture(GL_TEXTURE_2D, depth_buffer_texture); TEST_OPENGL_ERROR();
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT,
+                 GL_FLOAT, 0); TEST_OPENGL_ERROR();
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float clamp_color[] = { 1.0f,1.0f,1.0f,1.0f } ;
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_buffer_texture,
+                         0); TEST_OPENGL_ERROR();
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, clamp_color);
+
+
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return -1;

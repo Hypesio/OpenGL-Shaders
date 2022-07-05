@@ -10,7 +10,7 @@ CC = g++
 
 CPP_FILES = src/program.cc src/input.cc src/lib/obj.cc src/utils.cc src/shader_func.cc src/textures.cc src/lib/stb_image.cc
 CPP_FILES +=
-HXX_FILES = src/program.hh src/object_vbo.hh src/input.hh src/camera.hh src/mouse.hh src/lib/obj.hh src/utils.hh src/shader_func.hh src/textures.hh src/lib/stb_image.h
+HXX_FILES = src/program.hh src/object_vbo.hh src/input.hh src/camera.hh src/mouse.hh src/lib/obj.hh src/utils.hh src/shader_func.hh src/textures.hh src/lib/stb_image.h src/light.hh
 HXX_FILES +=
 OBJ_FILES = $(CPP_FILES:.cc=.o)
 

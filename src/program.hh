@@ -10,6 +10,7 @@
 
 #include "lib/obj.hh"
 #include "utils.hh"
+#include <vector>
 
 #define TEST_OPENGL_ERROR()                                                    \
     do                                                                         \
@@ -21,7 +22,18 @@
 
 class program
 {
+private:
+    GLuint program_id_;
+
+    GLuint vertex_shd_id_;
+    GLuint fragment_shd_id_;
+
+    std::vector<obj *> objects_;
+
+    bool ready_ = false;
+
 public:
+    GLuint values[12]; 
     program() = default;
     ~program() = default;
     char *getlog(GLint id, GLenum type);
@@ -39,14 +51,14 @@ public:
         return program_id_;
     }
         
-    inline obj *get_objects()
+    inline std::vector<obj *> get_objects()
     {
         return objects_;
     }
 
-    inline void set_objects(obj *objects)
+    inline void add_object(obj *object)
     {
-        objects_ = objects;
+        objects_.push_back(object);
     }
 
     static program *make_program(const std::string &vertex_shader_path, const std::string &fragment_shader_path)
@@ -114,13 +126,5 @@ public:
         glUniform4f(GetUniformLocation(name), x, y, z, w); 
     }
 
-private:
-    GLuint program_id_;
 
-    GLuint vertex_shd_id_;
-    GLuint fragment_shd_id_;
-
-    obj *objects_;
-
-    bool ready_ = false;
 };

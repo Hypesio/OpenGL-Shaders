@@ -6,9 +6,10 @@ in vec3 normal_flat;
 in vec3 tangent;
 
 uniform vec3 color;
-uniform vec3 light_pos;
+uniform vec3 light_dir;
 uniform vec3 camera_pos;
 uniform mat4 projection_matrix;
+uniform mat4 light_projection_matrix;
 uniform mat4 model_view_matrix;
 uniform vec4 clip_plane;
 uniform float time_passed;
@@ -19,6 +20,7 @@ out vec3 frag_normal;
 out vec2 interpolated_uv;
 out vec3 frag_tangent;
 out vec3 view_dir;
+out vec4 frag_pos_light_space;
 
 out float windward_coeff;
 out float leeward_coeff;
@@ -34,7 +36,7 @@ void main()
     gl_ClipDistance[0] = dot(vec4(position, 1.0), clip_plane);
 
     out_color = color;
-    frag_light_dir = normalize(light_pos - position);
+    frag_light_dir = light_dir;
     interpolated_uv = uv;
     frag_normal = normal_flat;
     frag_tangent = tangent;
@@ -51,4 +53,7 @@ void main()
 
     windspot_tex_coord = uv * vec2(1.5, 1.5);
     windspot_tex_coord.x += time_passed * 0.1;
+
+    // light
+    frag_pos_light_space = light_projection_matrix * model_view_matrix * vec4(position, 1.0);
 }
