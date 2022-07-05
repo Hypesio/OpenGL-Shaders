@@ -148,3 +148,46 @@ void update_water_cam(Camera *main_cam, Camera *water_cam)
 
     water_cam->update_view();
 }
+
+bool init_palm_shader(program *program, Camera* camera)
+{
+    glm::mat4 view = camera->get_view();
+    init_view_projection(program, view);
+
+    program->set_uniform_vec3("light_pos", light_pos);
+
+    obj *objects = program->get_objects();
+    
+    obj_set_prop_loc(objects, OBJ_KD, program->GetUniformLocation("kd_color"), -1, -1);
+    /*
+    float c[6];
+
+    for (int i = 0; i < 3; i++)
+    {
+        obj_get_mtrl_c(objects, OBJ_KD, i, c);
+        std::cout << "KD  = " << c[0] << " " << c[1] <<  " " << c[2] << " " << c[3] <<std::endl;
+    }*/
+
+    if (objects != nullptr)
+    {
+        glBindVertexArray(objects->vao);
+        TEST_OPENGL_ERROR();
+
+        const struct obj_surf *sp = objects->sv;
+
+        while(sp != nullptr && sp->pibo != 0 && sp->pc != 0)
+        {
+            if (0 <= sp->mi && sp->mi < objects->mc)
+                obj_render_mtrl(objects, sp->mi); TEST_OPENGL_ERROR();
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo); TEST_OPENGL_ERROR();
+            glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
+                        (const GLvoid *)0); TEST_OPENGL_ERROR();
+            sp++;
+        }
+    }
+
+    glBindVertexArray(0);
+
+    return true;
+}

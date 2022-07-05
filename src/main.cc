@@ -161,6 +161,19 @@ bool init_object()
     }
     planeWater->values[6] = loadTexture("water_normal.png", false);
 
+    // Load Palm trees
+    obj *palm = obj_create("data/palm_trees.obj");
+
+    obj_set_vert_loc(
+        palm, -1,
+        glGetAttribLocation(programs[3]->get_program_id(), "normal_flat"),
+        -1,
+        glGetAttribLocation(programs[3]->get_program_id(), "position"));
+    TEST_OPENGL_ERROR();
+
+    obj_init(palm);
+    programs[3]->set_objects(palm);
+
     return true;
 }
 
@@ -186,6 +199,13 @@ bool init_shaders()
         return false;
 
     programs.push_back(water_prog);
+
+    program *palm_prog =
+        program::make_program(shader_paths[6], shader_paths[7]);
+    if (!palm_prog)
+        return false;
+
+    programs.push_back(palm_prog);
 
     return true;
 }
@@ -219,6 +239,9 @@ bool update_shaders(Camera *camera, int exclude_shader = -1,
         programs[2]->use();
         shader_array[2](programs[2], camera);
     }
+
+    programs[3]->use();
+    shader_array[3](programs[3], camera);
 
     return true;
 }
