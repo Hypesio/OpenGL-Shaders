@@ -51,10 +51,10 @@ bool shadow()
     // For perspective light
     vec3 coords = (frag_pos_light_space.xyz / frag_pos_light_space.w) * 0.5 + 0.5;
 
-    float depth_for_light = texture(light_depth_texure, coords.xy).r; 
-    float real_depth = coords.z;
+    float depth_for_light = texture(light_depth_texure, coords.xy).r; // Depth of what the light see at the same place
+    float real_depth = coords.z; // Depth of what the camera see in light visual space
 
-    if (real_depth > depth_for_light)
+    if (real_depth < depth_for_light)
         return true;
     return false;
 }  

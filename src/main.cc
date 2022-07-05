@@ -296,8 +296,8 @@ int main()
     Camera *water_cam = new Camera();
 
     // Main light creation
-    GLuint fbo_shadow, depth_buffer; 
-    generate_depth_texture_shadow(fbo_shadow, WIDTH_SHADOW, HEIGHT_SHADOW, depth_buffer);
+    GLuint fbo_shadow, depth_buffer, render_tex; 
+    generate_render_texture(fbo_shadow, WIDTH_SHADOW, HEIGHT_SHADOW, render_tex, depth_buffer);
     vec3 light_pos = vec3(300., 1000., 0.7);
     DirectionalLight* light = new DirectionalLight(light_pos, fbo_shadow, depth_buffer);
     set_light(light);
@@ -313,14 +313,14 @@ int main()
         Time::update_time_passed();
         process_input(window, camera);
 
-        // *** WORK IN PROGRESS *** Render from lights for shadows  ...
-        glViewport(0, 0, WIDTH_SHADOW, HEIGHT_SHADOW);
+        // Render from lights for shadows 
         glBindFramebuffer(GL_FRAMEBUFFER, light->fbo_shadow);
+        glViewport(0, 0, WIDTH_SHADOW, HEIGHT_SHADOW);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         //glViewport(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2); 
         //glViewport(0, 0, WIDTH, HEIGHT);
-        glEnable(GL_CULL_FACE);
-        glFrontFace(GL_CCW); // Backface display 
+        //glEnable(GL_CULL_FACE);
+        //glFrontFace(GL_CCW); // Backface display 
         programs[4]->use();
         shader_array[4](programs[4], light->camera);
         glDisable(GL_CULL_FACE);
@@ -347,10 +347,24 @@ int main()
 
         // Be sure the frame buffer target the screen
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW); 
         TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         framebuffer_size_callback(window, WIDTH, HEIGHT);
         update_shaders(camera);
+
+        // Render from lights for shadows 
+        /*glBindFramebuffer(GL_FRAMEBUFFER, 0);//light->fbo_shadow);
+        //glViewport(0, 0, WIDTH_SHADOW, HEIGHT_SHADOW);
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+        //glViewport(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2); 
+        glViewport(0, 0, WIDTH, HEIGHT);
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW); // Backface display 
+        programs[4]->use();
+        shader_array[4](programs[4], light->camera);
+        glDisable(GL_CULL_FACE);*/
 
         glfwSwapBuffers(window);
         glfwPollEvents();

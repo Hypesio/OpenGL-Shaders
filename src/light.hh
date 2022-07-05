@@ -22,14 +22,21 @@ public:
         camera = new Camera();
         fbo_shadow = _fbo_shadow;
         depth_buffer = _depth_buffer;
-        camera->cameraFront = direction;
-        camera->cameraPos = vec3(0,0,0) + direction * 100.0f;
+
+        //camera->cameraFront = direction;
+        //camera->cameraPos = vec3(0,0,0) + direction * 100.0f;
+        //camera -> cameraUp = glm::vec3(0.0f, 0.0f, 1.0f);
+       
+        //camera->cameraPos = vec3(0.0f,0.0f,1.0f) * 100.0f;
+        camera->cameraPos = vec3(0.0f, 20.0f, -300.0f);
         camera->update_view();
     }
 
-    /*glm::mat4 get_view_matrix(float distance = 100.0f) {
-        return glm::lookAt(distance * light_pos, -light_pos, glm::vec3(0.0f, 0.0f, 1.0f));
-    }*/
+    glm::mat4 get_view_matrix(float distance = 100.0f) {
+        return camera->get_view();
+        //return glm::rotate(camera->get_view(), glm::radians(90.0f),  glm::vec3(0.0f, 1.0f, 0.0f));
+        //return glm::lookAt(distance * light_pos, -light_pos, glm::vec3(0.0f, 0.0f, 1.0f));
+    }
 
     glm::mat4 get_projection_matrix() {
         float near_plane = 0.1f, far_plane = 1000.0f;

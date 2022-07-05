@@ -2,6 +2,8 @@
 
 #include <GL/gl.h>
 #include <cstddef>
+#include <glm/ext/matrix_float4x4.hpp>
+#include <glm/gtx/io.hpp>
 #include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_float4.hpp>
@@ -83,7 +85,7 @@ bool init_dunes_shader(program *program, Camera *camera)
     program->set_texture_2D("light_depth_texure", 2, light->depth_buffer);
     GLuint matrix = program->GetUniformLocation("light_projection_matrix");
     glUniformMatrix4fv(matrix, 1, GL_FALSE,
-                       glm::value_ptr(light->get_projection_matrix()));
+                       glm::value_ptr(light->get_projection_matrix() * light->get_view_matrix()));
 
     obj_proc(objects[0]);
     TEST_OPENGL_ERROR();
@@ -119,7 +121,7 @@ bool init_water_shader(program *program, Camera *camera)
     program->set_uniform_float("time_passed", Time::get_time_passed());
     GLuint matrix = program->GetUniformLocation("light_projection_matrix");
     glUniformMatrix4fv(matrix, 1, GL_FALSE,
-                       glm::value_ptr(light->get_projection_matrix()));
+                       glm::value_ptr(light->get_projection_matrix() * light->get_view_matrix()));
 
     std::vector<obj *> objects = program->get_objects();
 
@@ -139,14 +141,16 @@ bool init_water_shader(program *program, Camera *camera)
 bool init_shadow_shader(program *program, Camera *camera)
 {
     GLuint model_view_matrix = program->GetUniformLocation("model_view_matrix");
-    glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE,
-                       &light->camera->get_view()[0][0]);
+    glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, &light->get_view_matrix()[0][0]);
     TEST_OPENGL_ERROR();
+
+    std::cout << "View --" << light->camera->get_view() << std::endl;
 
     GLuint projection_matrix = program->GetUniformLocation("projection_matrix");
     glUniformMatrix4fv(projection_matrix, 1, GL_FALSE,
                        glm::value_ptr(light->get_projection_matrix()));
     TEST_OPENGL_ERROR();
+    std::cout << "Projection --" << light->get_projection_matrix() << std::endl;
 
     std::vector<obj *> objects = program->get_objects();
     display_obj(objects);

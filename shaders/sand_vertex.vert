@@ -59,5 +59,5 @@ void main()
     windspot_tex_coord.x += time_passed * 0.1;
 
     // light
-    frag_pos_light_space = light_projection_matrix * model_view_matrix * vec4(position, 1.0);
+    frag_pos_light_space = light_projection_matrix * vec4(position, 1.0);
 }
