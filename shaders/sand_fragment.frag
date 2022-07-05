@@ -18,13 +18,9 @@ in vec4 frag_pos_light_space;
 uniform sampler2D normal_map;
 uniform sampler2D dust_texture;
 uniform sampler2D light_depth_texure;
-<<<<<<< HEAD
-
 float normal_map_tilling1 = 0.3;
 float normal_map_tilling2 = 0.44;
 float normal_map_tilling3 = 0.01;
-=======
->>>>>>> ef0e57593b2ed0c1ab6bc7b9abd849252de46c8e
 
 layout(location = 0) out vec4 output_color;
 

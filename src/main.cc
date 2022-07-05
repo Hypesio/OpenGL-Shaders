@@ -330,8 +330,8 @@ int main()
         //glViewport(0, 0, WIDTH, HEIGHT);
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW); // Backface display 
-        programs[3]->use();
-        shader_array[3](programs[3], camera);
+        programs[4]->use();
+        shader_array[4](programs[4], camera);
         glDisable(GL_CULL_FACE);
 
         glEnable(GL_CLIP_PLANE0);
