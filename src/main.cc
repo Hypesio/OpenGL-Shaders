@@ -85,9 +85,12 @@ bool init_GL()
 bool init_object()
 {
     // Load obj from file
-    obj *dunes = obj_create("data/simple_dunes.obj");
+    obj *dunes = obj_create("data/dunes_with_big_lake.obj");
     if (!dunes)
+    {
+        std::cout << "Dunes cannot be created" << std::endl;
         return false;
+    }
 
     obj_set_vert_loc(
         dunes, 
@@ -99,8 +102,8 @@ bool init_object()
 
     obj_init(dunes);
     programs[0]->set_objects(dunes);
-    dunes->values[0] = loadSandTexture();
-    dunes->values[1] = loadTexture("sand/upwind.png");
+    dunes->values[0] = loadTexture("sand/sand_normal_map.jpg", false);
+    dunes->values[1] = loadTexture("sand/upwind.png", false);
     
 
     // Load obj for skybox
@@ -275,13 +278,13 @@ int main()
         process_input(window, camera);
 
         glEnable(GL_CLIP_PLANE0);
-
         // Render for the water refraction
         glBindFramebuffer(GL_FRAMEBUFFER,
                           programs[2]->get_objects()->values[2]);
         TEST_OPENGL_ERROR();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         update_shaders(camera, -2, vec4(0, -1, 0, -0.000001));
+
 
         // Render for the water reflection
         glEnable(GL_CULL_FACE);

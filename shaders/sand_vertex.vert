@@ -18,6 +18,8 @@ out vec3 frag_light_dir;
 out vec3 frag_normal;
 out vec2 interpolated_uv;
 out vec3 frag_tangent;
+out vec2 sand_uv;
+
 out vec3 view_dir;
 
 out float windward_coeff;
@@ -39,6 +41,8 @@ void main()
     frag_normal = normal_flat;
     frag_tangent = tangent;
     view_dir = normalize(camera_pos - position);
+
+    sand_uv = uv * vec2(150.0, 150.0);
 
     windward_coeff = clamp(4.0 * dot(normal_flat, normalize(vec3(1.0, 0.0, 0.13))), 0.0, 1.0);
     leeward_coeff = clamp(14.0 * dot(normal_flat, normalize(vec3(-1.0, 0.0, -0.2))), 0.0, 1.0);
