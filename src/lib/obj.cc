@@ -24,6 +24,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <iostream>
 
 #ifndef CONF_NO_GL
 #ifdef __APPLE__
@@ -44,6 +45,14 @@
 #define GL_INDEX_T GL_UNSIGNED_SHORT
 */
 /*============================================================================*/
+
+#define TEST_OPENGL_ERROR()                                                    \
+    do                                                                         \
+    {                                                                          \
+        GLenum err = glGetError();                                             \
+        if (err != GL_NO_ERROR)                                                \
+            std::cerr << "OpenGL ERROR! " << __FILE__ << " " << __LINE__ << ", number " << err << std::endl;             \
+    } while (0)
 
 #include "obj.hh"
 
