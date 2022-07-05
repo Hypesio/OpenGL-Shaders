@@ -1,19 +1,24 @@
 #include "shader_func.hh"
 
 #include <GL/gl.h>
+#include <cstddef>
+#include <glm/ext/quaternion_geometric.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_float4.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <iterator>
 #include <ostream>
+#include <vector>
 
 #include "camera.hh"
-#include "program.hh"
 #include "input.hh"
+#include "light.hh"
+#include "program.hh"
 
 glm::vec3 light_pos(3., 1000., 0.7);
 glm::vec4 clip_plane = vec4(0, 1, 0, 0);
+DirectionalLight *light = NULL;
 
 #define HEIGHT 900
 #define WIDTH 1400
@@ -25,27 +30,35 @@ void init_view_projection(program *program, glm::mat4 view)
     glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, &view[0][0]);
     TEST_OPENGL_ERROR();
 
-    glm::mat4 projection = glm::frustum(-1.0, 1.0, -1.0, 1.0, 1.0, 500.0);
+    glm::mat4 projection = glm::frustum(-0.1, 0.1, -0.1, 0.1, 0.1, 1000.0);
+    /*glm::mat4 projection =
+        glm::mat4(5.00000, 0.00000, 0.00000, 0.00000, 0.00000, 5.00000, 0.00000,
+                  0.00000, 0.00000, 0.00000, -1.00020, -1.00000, 0.00000,
+                  0.00000, -10.00100, 0.00000);*/
 
     GLuint projection_matrix = program->GetUniformLocation("projection_matrix");
-    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE,
+                       glm::value_ptr(projection));
     TEST_OPENGL_ERROR();
 }
 
-void display_obj(obj *objects)
+void display_obj(std::vector<obj *> objects)
 {
-    if (objects != nullptr)
+    if (!objects.empty())
     {
-        glBindVertexArray(objects->vao);
-        TEST_OPENGL_ERROR();
+        for (size_t i = 0; i < objects.size(); i++)
+        {
+            obj *o = objects[i];
+            glBindVertexArray(o->vao);
+            TEST_OPENGL_ERROR();
 
-        const struct obj_surf *sp = objects->sv;
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
-
-        TEST_OPENGL_ERROR();
-        glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
-                       (const GLvoid *)0);
-        TEST_OPENGL_ERROR();
+            const struct obj_surf *sp = o->sv;
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
+            TEST_OPENGL_ERROR();
+            glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
+                           (const GLvoid *)0);
+            TEST_OPENGL_ERROR();
+        }
     }
 }
 
@@ -62,19 +75,23 @@ bool init_dunes_shader(program *program, Camera *camera)
 
     glm::vec3 color_vec(0.97, 0.89, 0.71);
     program->set_uniform_vec3("color", color_vec);
-    program->set_uniform_vec3("light_pos", light_pos);
+    program->set_uniform_vec3("light_dir", light->direction);
     program->set_uniform_float("time_passed", Time::get_time_passed());
     //program->set_uniform_vec3("camera_pos", camera->cameraPos);
     program->set_uniform_vec4("clip_plane", clip_plane.x, clip_plane.y, clip_plane.z,
                 clip_plane.w);
 
     // Objects
-    obj *objects = program->get_objects();
+    std::vector<obj *> objects = program->get_objects();
 
-    program->set_texture_2D("normal_map", 0, objects->values[0]);
-    program->set_texture_2D("dust_texture", 1, objects->values[1]);
+    program->set_texture_2D("normal_map", 0, program->values[0]);
+    program->set_texture_2D("dust_texture", 1, program->values[1]);
+    program->set_texture_2D("light_depth_texure", 2, light->depth_buffer);
+    GLuint matrix = program->GetUniformLocation("light_projection_matrix");
+    glUniformMatrix4fv(matrix, 1, GL_FALSE,
+                       glm::value_ptr(light->get_projection_matrix()));
 
-    obj_proc(objects);
+    obj_proc(objects[0]);
     TEST_OPENGL_ERROR();
 
     display_obj(objects);
@@ -91,10 +108,10 @@ bool init_skybox_shader(program *program, Camera *camera)
     glm::mat4 view = glm::mat4(glm::mat3(camera->get_view()));
     init_view_projection(program, view);
 
-    obj *objects = program->get_objects();
-    glActiveTexture(GL_TEXTURE0);
+    std::vector<obj *> objects = program->get_objects();
+    /*glActiveTexture(GL_TEXTURE0);
     TEST_OPENGL_ERROR();
-    glBindTexture(GL_TEXTURE_CUBE_MAP, objects->mc);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, objects->mc);*/
 
     /*GLuint cloud1 = program->GetUniformLocation("cloud_tiny");
     glUniform1i(cloud1, 1); TEST_OPENGL_ERROR();
@@ -116,22 +133,43 @@ bool init_water_shader(program *program, Camera *camera)
     glm::mat4 view = camera->get_view();
     init_view_projection(program, view);
 
-    program->set_uniform_vec4("clip_plane", clip_plane.x, clip_plane.y, clip_plane.z,
-                clip_plane.w);
-    program->set_uniform_vec3("light_pos", light_pos);
+    program->set_uniform_vec4("clip_plane", clip_plane.x, clip_plane.y,
+                              clip_plane.z, clip_plane.w);
+    program->set_uniform_vec3("light_dir", light->direction);
     program->set_uniform_vec3("cam_pos", camera->cameraPos);
     program->set_uniform_float("time_passed", Time::get_time_passed());
+    GLuint matrix = program->GetUniformLocation("light_projection_matrix");
+    glUniformMatrix4fv(matrix, 1, GL_FALSE,
+                       glm::value_ptr(light->get_projection_matrix()));
 
-    obj *objects = program->get_objects();
+    std::vector<obj *> objects = program->get_objects();
 
-    program->set_texture_2D("reflection_texture", 0, objects->values[1]);
-    program->set_texture_2D("refraction_texture", 1, objects->values[3]);
-    program->set_texture_2D("refraction_depth_texture", 2, objects->values[4]);
-    program->set_texture_2D("normal_map", 3, objects->values[6]);
+    program->set_texture_2D("reflection_texture", 0, program->values[1]);
+    program->set_texture_2D("refraction_texture", 1, program->values[3]);
+    program->set_texture_2D("refraction_depth_texture", 2, program->values[4]);
+    program->set_texture_2D("normal_map", 3, program->values[6]);
+    program->set_texture_2D("light_depth_texure", 4, light->depth_buffer);
 
     display_obj(objects);
 
     glBindVertexArray(0);
+
+    return true;
+}
+
+bool init_shadow_shader(program *program, Camera *camera)
+{
+    GLuint model_view_matrix = program->GetUniformLocation("model_view_matrix");
+    glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, &light->camera->get_view()[0][0]);
+    TEST_OPENGL_ERROR();
+
+    GLuint projection_matrix = program->GetUniformLocation("projection_matrix");
+    glUniformMatrix4fv(projection_matrix, 1, GL_FALSE,
+                       glm::value_ptr(light->get_projection_matrix()));
+    TEST_OPENGL_ERROR();
+
+    std::vector<obj *> objects = program->get_objects();
+    display_obj(objects);
 
     return true;
 }
@@ -156,9 +194,9 @@ bool init_palm_shader(program *program, Camera* camera)
 
     program->set_uniform_vec3("light_pos", light_pos);
 
-    obj *objects = program->get_objects();
+    std::vector<obj *> objects = program->get_objects();
     
-    obj_set_prop_loc(objects, OBJ_KD, program->GetUniformLocation("kd_color"), -1, -1);
+    obj_set_prop_loc(objects[0], OBJ_KD, program->GetUniformLocation("kd_color"), -1, -1);
     /*
     float c[6];
 
@@ -168,17 +206,17 @@ bool init_palm_shader(program *program, Camera* camera)
         std::cout << "KD  = " << c[0] << " " << c[1] <<  " " << c[2] << " " << c[3] <<std::endl;
     }*/
 
-    if (objects != nullptr)
+    if (!objects.empty())
     {
-        glBindVertexArray(objects->vao);
+        glBindVertexArray(objects[0]->vao);
         TEST_OPENGL_ERROR();
 
-        const struct obj_surf *sp = objects->sv;
+        const struct obj_surf *sp = objects[0]->sv;
 
         while(sp != nullptr && sp->pibo != 0 && sp->pc != 0)
         {
-            if (0 <= sp->mi && sp->mi < objects->mc)
-                obj_render_mtrl(objects, sp->mi); TEST_OPENGL_ERROR();
+            if (0 <= sp->mi && sp->mi < objects[0]->mc)
+                obj_render_mtrl(objects[0], sp->mi); TEST_OPENGL_ERROR();
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo); TEST_OPENGL_ERROR();
             glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
@@ -190,4 +228,8 @@ bool init_palm_shader(program *program, Camera* camera)
     glBindVertexArray(0);
 
     return true;
+}
+void set_light(DirectionalLight *l)
+{
+    light = l;
 }

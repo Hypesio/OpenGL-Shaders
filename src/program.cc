@@ -1,6 +1,7 @@
 #include "program.hh"
 
 #include <string>
+#include <vector>
 
 void program::set_shader_id(GLuint shd_id, GLenum type)
 {
@@ -13,6 +14,8 @@ void program::set_shader_id(GLuint shd_id, GLenum type)
 
 GLuint program::load_shader(const std::string &src, GLenum type)
 {
+    objects_ = std::vector<obj *>();
+
     GLint compile_status = GL_TRUE;
 
     GLuint shader_id = glCreateShader(type);
