@@ -26,10 +26,6 @@ std::vector<program *> programs;
 void framebuffer_size_callback(__attribute__((unused)) GLFWwindow *window,
                                int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width
-    // and height will be significantly larger than specified on retina
-    // displays.
-
     glViewport(0, 0, width, height);
 }
 
@@ -112,8 +108,6 @@ bool init_object()
     
 
     // Load obj for skybox
-    //unsigned int cubemapTexture = loadSkybox();
-
     obj *skybox = obj_create("data/sphere.obj");
     obj_set_vert_loc(
         skybox, -1,
@@ -123,9 +117,6 @@ bool init_object()
     TEST_OPENGL_ERROR();
     obj_init(skybox);
     programs[1]->add_object(skybox);
-    //skybox->mc = cubemapTexture;
-    //skybox->values[0] = loadTexture("cloud_tiny.png", true);
-
 
     // Load obj for water
     obj *planeWater = obj_create("data/plane.obj");
@@ -322,7 +313,7 @@ int main()
         Time::update_time_passed();
         process_input(window, camera);
 
-        // Render from lights for shadows 
+        // *** WORK IN PROGRESS *** Render from lights for shadows  ...
         glViewport(0, 0, WIDTH_SHADOW, HEIGHT_SHADOW);
         glBindFramebuffer(GL_FRAMEBUFFER, light->fbo_shadow);
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);

@@ -13,13 +13,6 @@
 
 std::string textures_path = "textures/";
 
-unsigned int loadSkybox()
-{
-    std::vector<std::string> faces = { "skybox/right.jpg",  "skybox/left.jpg",  "skybox/top.jpg",
-                                       "skybox/bottom.jpg", "skybox/front.jpg", "skybox/back.jpg" };
-    return loadCubemap(faces);
-}
-
 unsigned int loadTexture(std::string filename, bool alpha) {
 
     unsigned int textureID;
@@ -45,40 +38,6 @@ unsigned int loadTexture(std::string filename, bool alpha) {
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-    return textureID;
-}
-
-unsigned int loadCubemap(std::vector<std::string> faces)
-{
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-    int width, height, nrChannels;
-    for (unsigned int i = 0; i < faces.size(); i++)
-    {
-        std::string fullPath = textures_path;
-        fullPath = fullPath.append(faces[i].c_str());
-        void *data =
-            stbi_load(fullPath.c_str(), &width, &height, &nrChannels, 0);
-        if (!data)
-        {
-            std::cout << "Cubemap tex failed to load : " << fullPath
-                      << std::endl;
-            return -1;
-        }
-
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width,
-                         height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        free(data);
-    }
-
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     return textureID;
 }
