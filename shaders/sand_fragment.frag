@@ -55,8 +55,7 @@ bool shadow()
 
     // Shadow acnee 
     float cos_theta = clamp(dot(frag_normal, frag_light_dir), 0.0, 1.0);
-    float bias = 2.0 * tan(acos(cos_theta));
- 
+    float bias = 3.0 * tan(acos(cos_theta));
 
     float depth_for_light = texture(light_depth_texure, coords.xy).r; // Depth of what the light see at the same place
     // Compute new depth 

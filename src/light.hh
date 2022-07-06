@@ -36,7 +36,7 @@ public:
         //return glm::lookAt(camera->cameraPos, vec3(0.0, 0.0, 0.0) , {0, 1, 0});
         return camera->get_view();
         //return glm::rotate(camera->get_view(), glm::radians(90.0f),  glm::vec3(0.0f, 1.0f, 0.0f));
-        //return glm::lookAt(distance * light_pos, -light_pos, glm::vec3(0.0f, 0.0f, 1.0f));
+        //return glm::lookAt(light_pos, glm::vec3(0.0, 0.0 ,0.0) , glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
     glm::mat4 get_projection_matrix() {

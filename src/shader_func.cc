@@ -51,11 +51,18 @@ void display_obj(std::vector<obj *> objects)
             TEST_OPENGL_ERROR();
 
             const struct obj_surf *sp = o->sv;
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo);
-            TEST_OPENGL_ERROR();
-            glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
-                           (const GLvoid *)0);
-            TEST_OPENGL_ERROR();
+
+            for (int si = 0; si < o->sc; ++si)
+            {
+                sp = o->sv + si;
+                //if (0 <= sp->mi && sp->mi < objects[0]->mc)
+                //    obj_render_mtrl(objects[0], sp->mi); TEST_OPENGL_ERROR();
+
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sp->pibo); TEST_OPENGL_ERROR();
+                glDrawElements(GL_TRIANGLES, 3 * sp->pc, GL_UNSIGNED_INT,
+                            (const GLvoid *)0); TEST_OPENGL_ERROR();
+
+            }
         }
     }
 }
@@ -103,10 +110,7 @@ bool init_skybox_shader(program *program, Camera *camera)
 
     std::vector<obj *> objects = program->get_objects();
 
-    glEnable(GL_POLYGON_OFFSET_FILL); 
-    glPolygonOffset(1.0f,1.0f);
     display_obj(objects);
-     glDisable(GL_POLYGON_OFFSET_FILL); 
     glBindVertexArray(0);
 
     return true;
@@ -147,13 +151,10 @@ bool init_shadow_shader(program *program, Camera *camera)
     glUniformMatrix4fv(model_view_matrix, 1, GL_FALSE, &light->get_view_matrix()[0][0]);
     TEST_OPENGL_ERROR();
 
-    std::cout << "View --" << light->camera->get_view() << std::endl;
-
     GLuint projection_matrix = program->GetUniformLocation("projection_matrix");
     glUniformMatrix4fv(projection_matrix, 1, GL_FALSE,
                        glm::value_ptr(light->get_projection_matrix()));
     TEST_OPENGL_ERROR();
-    std::cout << "Projection --" << light->get_projection_matrix() << std::endl;
 
     std::vector<obj *> objects = program->get_objects();
     display_obj(objects);
@@ -182,18 +183,9 @@ bool init_palm_shader(program *program, Camera *camera)
     program->set_uniform_vec3("light_pos", light_pos);
 
     std::vector<obj *> objects = program->get_objects();
+    
+    obj_set_prop_loc(objects[0], OBJ_KD, program->GetUniformLocation("kd_color"), -1, -1);
 
-    obj_set_prop_loc(objects[0], OBJ_KD,
-                     program->GetUniformLocation("kd_color"), -1, -1);
-    /*
-    float c[6];
-
-    for (int i = 0; i < 3; i++)
-    {
-        obj_get_mtrl_c(objects, OBJ_KD, i, c);
-        std::cout << "KD  = " << c[0] << " " << c[1] <<  " " << c[2] << " " <<
-    c[3] <<std::endl;
-    }*/
 
     if (!objects.empty())
     {
