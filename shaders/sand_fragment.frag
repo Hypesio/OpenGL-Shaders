@@ -51,10 +51,25 @@ bool shadow()
     // For perspective light
     vec3 coords = (frag_pos_light_space.xyz / frag_pos_light_space.w) * 0.5 + 0.5;
 
-    float depth_for_light = texture(light_depth_texure, coords.xy).r; // Depth of what the light see at the same place
-    float real_depth = coords.z; // Depth of what the camera see in light visual space
+    // Gestion des cams avec minecraft ? 
 
-    if (real_depth < depth_for_light)
+    // Shadow acnee 
+    float cos_theta = clamp(dot(frag_normal, frag_light_dir), 0.0, 1.0);
+    float bias = 2.0 * tan(acos(cos_theta));
+ 
+
+    float depth_for_light = texture(light_depth_texure, coords.xy).r; // Depth of what the light see at the same place
+    // Compute new depth 
+    float far = 1000.0; 
+    float near = 0.1;
+    depth_for_light = (2.0 * near * far)/ (far + near - (depth_for_light * 2.0 - 1.0) * far - near);
+
+    float real_depth = coords.z; // Depth of what the camera see in light visual space
+    real_depth = (2.0 * near * far)/ (far + near - (real_depth * 2.0 - 1.0) * far - near);
+
+    // Depth_for _light always == 1
+    // Real Depth == 1
+    if (real_depth - bias > depth_for_light)//depth_for_light
         return true;
     return false;
 }  

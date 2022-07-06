@@ -103,7 +103,10 @@ bool init_skybox_shader(program *program, Camera *camera)
 
     std::vector<obj *> objects = program->get_objects();
 
+    glEnable(GL_POLYGON_OFFSET_FILL); 
+    glPolygonOffset(1.0f,1.0f);
     display_obj(objects);
+     glDisable(GL_POLYGON_OFFSET_FILL); 
     glBindVertexArray(0);
 
     return true;

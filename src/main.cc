@@ -173,7 +173,8 @@ bool init_object()
 
     // Shadow shader - Need to have all objects
     programs[4]->add_object(dunes); 
-    programs[4]->add_object(planeWater);
+    //programs[4]->add_object(planeWater);
+    programs[4]->add_object(palm); 
 
     return true;
 }
@@ -320,9 +321,10 @@ int main()
         //glViewport(WIDTH / 2, HEIGHT / 2, WIDTH / 2, HEIGHT / 2); 
         //glViewport(0, 0, WIDTH, HEIGHT);
         //glEnable(GL_CULL_FACE);
-        //glFrontFace(GL_CCW); // Backface display 
+        glFrontFace(GL_CW); // Backface display 
         programs[4]->use();
         shader_array[4](programs[4], light->camera);
+        glFrontFace(GL_CCW);
         glDisable(GL_CULL_FACE);
 
         glEnable(GL_CLIP_PLANE0);
