@@ -18,8 +18,8 @@
 
 #define HEIGHT 900
 #define WIDTH 1400
-#define HEIGHT_SHADOW 1000
-#define WIDTH_SHADOW 1000
+#define HEIGHT_SHADOW 10000
+#define WIDTH_SHADOW 10000
 
 std::vector<program *> programs;
 
