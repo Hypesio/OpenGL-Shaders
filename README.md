@@ -4,6 +4,10 @@ OpenGL project made from scratch.
 ## Oasis - Antoine Aubin & Philippe Aymard
 ![image](https://user-images.githubusercontent.com/47392735/187956801-1138bb75-aef6-4b73-a1b1-8063bd38966c.png) | ![image](https://user-images.githubusercontent.com/47392735/187957157-ac6c2727-6b40-492f-b19b-a13c62ad87d5.png)
 :-------------------------:|:-------------------------:
+
+https://user-images.githubusercontent.com/47392735/188273869-9384835d-f3e2-4cb9-a11a-a1a8cf37426b.mp4
+
+
 ### Shaders functionnalities
 #### Water shader 
 - Reflection
